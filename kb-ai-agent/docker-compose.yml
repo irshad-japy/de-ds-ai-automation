@@ -1,0 +1,10 @@
+version: "3.9"
+services:
+  # add vector DBs later if needed
+  # weaviate:
+  #   image: cr.weaviate.io/semitechnologies/weaviate:1.25.4
+  #   ports: ["8080:8080"]
+  #   environment:
+  #     - QUERY_DEFAULTS_LIMIT=25
+  #     - AUTHENTICATION_ANONYMOUS_ACCESS_ENABLED=true
+  #     - PERSISTENCE_DATA_PATH=/var/lib/weaviate
