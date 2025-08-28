@@ -1,10 +1,14 @@
-version: "3.9"
+version: "3.8"
+
 services:
-  # add vector DBs later if needed
-  # weaviate:
-  #   image: cr.weaviate.io/semitechnologies/weaviate:1.25.4
-  #   ports: ["8080:8080"]
-  #   environment:
-  #     - QUERY_DEFAULTS_LIMIT=25
-  #     - AUTHENTICATION_ANONYMOUS_ACCESS_ENABLED=true
-  #     - PERSISTENCE_DATA_PATH=/var/lib/weaviate
+  chroma:
+    image: chromadb/chroma:1.0.16
+    container_name: chroma
+    ports:
+      - "8000:8000"
+    environment:
+      IS_PERSISTENT: "TRUE"
+    volumes:
+      # Mount local ./data/index to container's storage path
+      - ./data/index:/chroma/chroma
+    restart: unless-stopped

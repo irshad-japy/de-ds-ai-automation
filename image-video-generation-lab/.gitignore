@@ -1,0 +1,25 @@
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+*.so
+*.DS_Store
+.env
+.venv/
+venv/
+.env.*
+*.log
+
+# Local data
+outputs/
+assets/fonts/*
+!assets/fonts/.keep
+assets/backgrounds/*
+!assets/backgrounds/.keep
+
+# Node / Gradio cache
+node_modules/
+.gradio/
+cache/
+hf_cache/

@@ -1,8 +1,10 @@
 import os, glob, json, click
-from dotenv import load_dotenv; load_dotenv()
-from tools.kb_ingest import ingest_pdfs, ingest_text_blobs
-from tools.kb_search import search_kb
-from agent_graph import jira_to_mr_flow
+from dotenv import load_dotenv
+from .tools.kb_ingest import ingest_pdfs, ingest_text_blobs
+from .tools.kb_search import search_kb
+from .agent_graph import jira_to_mr_flow
+
+load_dotenv()
 
 @click.group()
 def cli(): ...

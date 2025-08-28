@@ -1,0 +1,28 @@
+[tool.poetry]
+name = "image-video-generation-lab"
+version = "0.1.0"
+description = "Beginner-friendly Image & Video generation lab (Gradio + Diffusers + MoviePy)."
+authors = ["Irshad (user) and ChatGPT"]
+readme = "README.md"
+packages = [{include = "src"}]
+
+[tool.poetry.dependencies]
+python = ">=3.10,<3.13"
+gradio = ">=4.44.0"
+diffusers = ">=0.29.0"
+transformers = ">=4.42.0"
+accelerate = ">=0.33.0"
+safetensors = ">=0.4.4"
+numpy = ">=1.26.4"
+moviepy = ">=1.0.3"
+pyttsx3 = ">=2.90"
+tqdm = ">=4.66.4"
+srt = ">=3.5.3"
+
+
+[tool.poetry.group.dev.dependencies]
+pytest = "^8.0.0"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
