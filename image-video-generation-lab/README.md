@@ -10,27 +10,6 @@ Beginner‑friendly **Image & Video Generation** lab with three tools in one Gra
 
 ---
 
-## 1) Prerequisites
-
-- **Python** 3.10+
-- **FFmpeg** installed and on PATH
-  - Windows (PowerShell): `winget install Gyan.FFmpeg` (or install from ffmpeg.org)
-  - macOS (Homebrew): `brew install ffmpeg`
-  - Linux (Debian/Ubuntu): `sudo apt-get update && sudo apt-get install -y ffmpeg`
-- **PyTorch** (install per your OS/GPU)
-  - **CUDA 12.x GPU (Windows/Linux):**
-    ```bash
-    pip install --upgrade pip
-    pip install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu121
-    ```
-  - **CPU only (any OS):**
-    ```bash
-    pip install --upgrade pip
-    pip install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cpu
-    ```
-
-> If you already have torch installed, you can skip the above.
-
 ---
 
 ## 2) Setup
@@ -39,22 +18,12 @@ Beginner‑friendly **Image & Video Generation** lab with three tools in one Gra
 # Clone or unzip this project
 cd image-video-generation-lab
 
-# Create & activate virtual env (Windows PowerShell)
-python -m venv .venv
-.\.venv\Scripts\activate
-
-# macOS / Linux
-# python -m venv .venv
-# source .venv/bin/activate
-
-# Install Python deps (Torch must be installed beforehand as above)
-pip install -r requirements.txt
-or
 poetry add $(cat image-video-generation-lab/requirements.txt)
 
+poetry shall
 ```
 
-(Optional) If you want **ElevenLabs TTS**:
+If you want **ElevenLabs TTS**:
 1. Copy `.env.example` to `.env` and set `ELEVENLABS_API_KEY` (and voice id if you have one).
 2. Leave it blank to use offline `pyttsx3` TTS.
 
@@ -100,25 +69,12 @@ python -m src.meme.generate --background-prompt "dramatic sunset landscape" --to
 Create a short video (slideshow + TTS + captions):
 ```bash
 python -m src.shorts.generate --script "AI will transform workflows. Automate boring tasks. Focus on impact." --slides 5 --seconds 3
-```
+``
 
----
+-----------------------------------------
+6. Using the Voice / TTS Tab
+A. ElevenLabs (Cloud TTS)
+model id is: eleven_multilingual_v2
 
-## 5) Notes
-
-- First run may download models (Diffusers, Whisper if enabled).
-- **Captions**: By default we generate an `.srt` by splitting your script across the audio length.
-  If you set `USE_WHISPER=true` in `.env` and have `whisper` installed, we'll try to transcribe and build captions from the audio.
-- **Subtitles rendering**: Most players (VLC, Windows Movies & TV, etc.) auto‑load the `.srt` next to the MP4. To burn captions into the video, see comments in `src/shorts/generate.py` for an ffmpeg command.
-
-Enjoy! ✨
-
------------------------------------
-try to install gradio its depend on 
-ruff
-issue1. starlette but have installed verion smaller required higher
-issue2: isse vc_redist.x64.exe to need to install 
-issue3: in short folder generates.py file getting issue like syntax or not proper import file
-issue4: space in device 
-issue5: dll failed to get cpu or gpu related issue
-issue7: ImageClip is attribute error to generate short videos
+B. B. Local Parler-TTS (Offline AI TTS)
+model id is : parler-tts/parler-tts-mini-v1
