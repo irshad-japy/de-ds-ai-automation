@@ -1,0 +1,39 @@
+version: "3.9"
+
+networks:
+  common:
+    external: true
+    # Set this in your env or pass with --env-file. Example: my_common_infra_default
+    name: ${COMMON_NET_NAME}
+
+services:
+  backend:
+    build:
+      context: ./backend
+    container_name: ai-backend
+    restart: unless-stopped
+    networks: [common]
+    ports:
+      - "8000:8000"
+    environment:
+      # Talk to the already-running Qdrant on the same network by service name
+      QDRANT_URL: "http://qdrant:6333"
+
+      # If your backend needs Postgres directly (optional)
+      PGHOST: "postgres"
+      PGPORT: "5432"
+      PGUSER: "${DB_POSTGRESDB_USER}"
+      PGPASSWORD: "${DB_POSTGRESDB_PASSWORD}"
+      PGDATABASE: "${DB_POSTGRESDB_DATABASE}"
+
+      # LLM backends (pick what you actually use)
+      # If Ollama is running in the common stack and on same network:
+      # OLLAMA_URL: "http://ollama:11434"
+      # If you only published Ollama on the host, use host.docker.internal:
+      OLLAMA_URL: "http://host.docker.internal:${OLLAMA_PORT:-11434}"
+
+      EMBEDDING_MODEL: "sentence-transformers/all-MiniLM-L6-v2"
+      TZ: "${TZ:-Asia/Kolkata}"
+
+      # Optional OpenAI if you use it
+      OPENAI_API_KEY: "${OPENAI_API_KEY:-}"

@@ -1,0 +1,85 @@
+(common-venv-py3.12) PS C:\Users\erirs\projects\ird-projects\de_ds_ai_automation\Q&A_knowledge_base> poetry run python scripts/ingest.py --folder ./input [2025-09-30 18:41:55,701] INFO httpx: HTTP Request: POST http://localhost:11434/api/embeddings "HTTP/1.1 200 OK" [2025-09-30 18:41:55,769] INFO httpx: HTTP Request: POST http://localhost:11434/api/embeddings "HTTP/1.1 200 OK" [2025-09-30 18:41:55,776] INFO httpx: HTTP Request: GET http://localhost:6333/collections "HTTP/1.1 200 OK" Traceback (most recent call last): File "C:\Users\erirs\projects\ird-projects\de_ds_ai_automation\Q&A_knowledge_base\scripts\ingest.py", line 17, in <module> main() File "C:\Users\erirs\projects\ird-projects\de_ds_ai_automation\Q&A_knowledge_base\scripts\ingest.py", line 13, in main res = index_texts(pairs) ^^^^^^^^^^^^^^^^^^ File "C:\Users\erirs\projects\ird-projects\de_ds_ai_automation\Q&A_knowledge_base\src\lr\rag\retrieve.py", line 16, in index_texts upsert(points) File "C:\Users\erirs\projects\ird-projects\de_ds_ai_automation\Q&A_knowledge_base\src\lr\vector\qdrant_store.py", line 57, in upsert raise ValueError("Point missing 'vector'/'embedding'/'values'.") ValueError: Point missing 'vector'/'embedding'/'values'.
+
+solution: Mode A: a list of point dicts each having "vector" (or "embedding"/"values") + optional "payload" + optional "id".
+------------------------------------------------------
+(common-venv-py3.12) PS C:\Users\erirs\projects\ird-projects\de_ds_ai_automation\Q&A_knowledge_base> poetry run python scripts/ingest.py --folder ./input [2025-09-30 18:47:41,681] INFO httpx: HTTP Request: POST http://localhost:11434/api/embeddings "HTTP/1.1 200 OK" [2025-09-30 18:47:41,748] INFO httpx: HTTP Request: POST http://localhost:11434/api/embeddings "HTTP/1.1 200 OK" [2025-09-30 18:47:41,753] INFO httpx: HTTP Request: GET http://localhost:6333/collections "HTTP/1.1 200 OK" chunks: 2 example-id: setup_sim_local_using_bun_npm.txt::0 example-vec-len: 0 example-payload-keys: ['text'] types: <class 'list'> <class 'dict'> <class 'str'> [2025-09-30 18:47:41,784] INFO httpx: HTTP Request: PUT http://localhost:6333/collections/local_rag_chunks/points?wait=true "HTTP/1.1 400 Bad Request" Traceback (most recent call last): File "C:\Users\erirs\projects\ird-projects\de_ds_ai_automation\Q&A_knowledge_base\scripts\ingest.py", line 17, in <module> main() File "C:\Users\erirs\projects\ird-projects\de_ds_ai_automation\Q&A_knowledge_base\scripts\ingest.py", line 13, in main res = index_texts(pairs) ^^^^^^^^^^^^^^^^^^ File "C:\Users\erirs\projects\ird-projects\de_ds_ai_automation\Q&A_knowledge_base\src\lr\rag\retrieve.py", line 26, in index_texts upsert(vecs, payloads=payloads, ids=ids) File "C:\Users\erirs\projects\ird-projects\de_ds_ai_automation\Q&A_knowledge_base\src\lr\vector\qdrant_store.py", line 86, in upsert _upsert_batches(vec_list, pl_list, id_list, batch_size=batch_size) File "C:\Users\erirs\projects\ird-projects\de_ds_ai_automation\Q&A_knowledge_base\src\lr\vector\qdrant_store.py", line 99, in _upsert_batches client.upsert(collection_name=COLLECTION_NAME, points=chunk) File "C:\Users\erirs\projects\common_venv_py312\.venv\Lib\site-packages\qdrant_client\qdrant_client.py", line 1180, in upsert return self._client.upsert( ^^^^^^^^^^^^^^^^^^^^ File "C:\Users\erirs\projects\common_venv_py312\.venv\Lib\site-packages\qdrant_client\qdrant_remote.py", line 1569, in upsert http_result = self.openapi_client.points_api.upsert_points( ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ File "C:\Users\erirs\projects\common_venv_py312\.venv\Lib\site-packages\qdrant_client\http\api\points_api.py", line 1575, in upsert_points return self._build_for_upsert_points( ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ File "C:\Users\erirs\projects\common_venv_py312\.venv\Lib\site-packages\qdrant_client\http\api\points_api.py", line 806, in _build_for_upsert_points return self.api_client.request( ^^^^^^^^^^^^^^^^^^^^^^^^ File "C:\Users\erirs\projects\common_venv_py312\.venv\Lib\site-packages\qdrant_client\http\api_client.py", line 79, in request return self.send(request, type_) ^^^^^^^^^^^^^^^^^^^^^^^^^ File "C:\Users\erirs\projects\common_venv_py312\.venv\Lib\site-packages\qdrant_client\http\api_client.py", line 102, in send raise UnexpectedResponse.for_response(response) qdrant_client.http.exceptions.UnexpectedResponse: Unexpected Response: 400 (Bad Request) Raw response content: b'{"status":{"error":"Format error in JSON body: value setup_sim_local_using_bun_npm.txt::0 is not a valid point ID, valid values are either an unsigned integer or a UUID"},"time":0.0}'
+
+Embeddings are empty (example-vec-len: 0)
+Solution: ✅ Fix 1 — Make embeddings non-empty
+
+Your diag shows Ollama models: mxbai-embed-large:latest and llama3.1:latest.
+Your config default embed model is nomic-embed-text, which you don’t have pulled. Result: empty vectors ([]).
+
+---------------------------------------------------
+(common-venv-py3.12) PS C:\Users\erirs\projects\ird-projects\de_ds_ai_automation\Q&A_knowledge_base> poetry run python scripts/ingest.py --folder ./input [2025-09-30 18:56:11,495] INFO httpx: HTTP Request: POST http://localhost:11434/api/embeddings "HTTP/1.1 200 OK" [2025-09-30 18:56:11,541] INFO httpx: HTTP Request: POST http://localhost:11434/api/embeddings "HTTP/1.1 200 OK" Traceback (most recent call last): File "C:\Users\erirs\projects\ird-projects\de_ds_ai_automation\Q&A_knowledge_base\scripts\ingest.py", line 17, in <module> main() File "C:\Users\erirs\projects\ird-projects\de_ds_ai_automation\Q&A_knowledge_base\scripts\ingest.py", line 13, in main res = index_texts(pairs) ^^^^^^^^^^^^^^^^^^ File "C:\Users\erirs\projects\ird-projects\de_ds_ai_automation\Q&A_knowledge_base\src\lr\rag\retrieve.py", line 13, in index_texts raise RuntimeError( RuntimeError: Embedding model returned zero-length vectors. Set OLLAMA_EMBED_MODEL to an installed model (e.g., mxbai-embed-large) and retry. (common-venv-py3.12) PS C:\Users\erirs\projects\ird-projects\de_ds_ai_automation\Q&A_knowledge_base> curl -X DELETE http://localhost:6333/collections/local_rag_chunks Invoke-WebRequest : A parameter cannot be found that matches parameter name 'X'. At line:1 char:6 + curl -X DELETE http://localhost:6333/collections/local_rag_chunks + ~~ + CategoryInfo : InvalidArgument: (:) [Invoke-WebRequest], ParameterBindingException + FullyQualifiedErrorId : NamedParameterNotFound,Microsoft.PowerShell.Commands.InvokeWebRequestCommand (common-venv-py3.12) PS C:\Users\erirs\projects\ird-projects\de_ds_ai_automation\Q&A_knowledge_base> poetry run python - << 'PY' >> from lr.rag.embedder import get_embedder >> print("dim:", len(get_embedder().embed(["ok"])[0])) >> PY At line:1 char:22 + poetry run python - << 'PY' + ~ Missing file specification after redirection operator. At line:1 char:21 + poetry run python - << 'PY' + ~ The '<' operator is reserved for future use. At line:1 char:22 + poetry run python - << 'PY' + ~ The '<' operator is reserved for future use. At line:2 char:1 + from lr.rag.embedder import get_embedder + ~~~~ The 'from' keyword is not supported in this version of the language. At line:3 char:14 + print("dim:", len(get_embedder().embed(["ok"])[0])) + ~ Missing expression after ','. At line:3 char:15 + print("dim:", len(get_embedder().embed(["ok"])[0])) + ~~~ Unexpected token 'len' in expression or statement. At line:3 char:14 + print("dim:", len(get_embedder().embed(["ok"])[0])) + ~ Missing closing ')' in expression. At line:3 char:32 + print("dim:", len(get_embedder().embed(["ok"])[0])) + ~ An expression was expected after '('. At line:3 char:41 + print("dim:", len(get_embedder().embed(["ok"])[0])) + ~ Missing type name after '['. At line:3 char:40 + print("dim:", len(get_embedder().embed(["ok"])[0])) + ~ Missing ')' in method call. Not all parse errors were reported. Correct the reported errors and try again. + CategoryInfo : ParserError: (:) [], ParentContainsErrorRecordException + FullyQualifiedErrorId : MissingFileSpecification
+
+Your embeddings are still coming back with length 0 → this is 100% the reason ingest fails.
+Notes:
+
+I normalize base_url with .rstrip("/").
+
+I strictly parse multiple shapes and error if vector is empty.
+
+This prevents silent [] vectors.
+
+------------------------------------------------------------------
+(common-venv-py3.12) PS C:\Users\erirs\projects\ird-projects\de_ds_ai_automation\Q&A_knowledge_base> poetry run python scripts/test_embed.py Using base=http://localhost:11434, model=mxbai-embed-large status: 200 raw: {"embedding":[]} dim: 0 Embedding has length 0 (bad). Check model and server.
+
+Until we get a non-empty vector, ingest will always fail. Here’s a tight, step-by-step fix list that works on Windows/PowerShell.
+
+PROVIDER=ollama
+OLLAMA_BASE_URL=http://localhost:11434
+OLLAMA_EMBED_MODEL=nomic-embed-text
+OLLAMA_CHAT_MODEL=llama3.1
+
+docker exec -it my_common_infra-ollama-1 ollama rm mxbai-embed-large
+docker exec -it my_common_infra-ollama-1 ollama pull nomic-embed-text
+
+Then verify dimension from your code:
+poetry run python -c "from lr.rag.embedder import get_embedder; print('dim:', len(get_embedder().embed(['ok'])[0]))"
+
+
+Invoke-RestMethod -Method Delete -Uri "http://localhost:6333/collections/local_rag_chunks"
+
+---------------------------------------------------------------------------
+Traceback (most recent call last): File "C:\Users\erirs\projects\ird-projects\de_ds_ai_automation\Q&A_knowledge_base\scripts\ingest.py", line 17, in <module> main() File "C:\Users\erirs\projects\ird-projects\de_ds_ai_automation\Q&A_knowledge_base\scripts\ingest.py", line 13, in main res = index_texts(pairs) ^^^^^^^^^^^^^^^^^^ File "C:\Users\erirs\projects\ird-projects\de_ds_ai_automation\Q&A_knowledge_base\src\lr\rag\retrieve.py", line 13, in index_texts raise RuntimeError( RuntimeError: Embedding model returned zero-length vectors. Set OLLAMA_EMBED_MODEL to an installed model (e.g., mxbai-embed-large) and retry.
+
+1) Check what model your app is using
+poetry run python -c "from lr.config import settings; print('provider=',settings.provider,'embed=',settings.ollama_embed_model,'base=',settings.ollama_base)"
+
+
+Make sure it prints:
+provider= ollama embed= nomic-embed-text base= http://localhost:11434
+
+curl.exe -s -X POST "http://localhost:11434/api/embeddings" `
+  -H "Content-Type: application/json" `
+  -d '{ "model":"nomic-embed-text", "input":"hello world" }'
+
+
+-------------------------------------------
+(common-venv-py3.12) PS C:\Users\erirs\projects\ird-projects\de_ds_ai_automation\Q&A_knowledge_base> curl.exe -s -X POST "http://localhost:11434/api/embeddings" >> -H "Content-Type: application/json" >> -d '{ "model":"nomic-embed-text", "input":"hello world" }' {"error":"invalid character 'm' looking for beginning of object key string"} (common-venv-py3.12) PS C:\Users\erirs\projects\ird-projects\de_ds_ai_automation\Q&A_knowledge_base> $body = @{ model = "nomic-embed-text"; input = "hello world" } | ConvertTo-Json >> Invoke-RestMethod -Method Post -Uri "http://localhost:11434/api/embeddings" -ContentType "application/json" -Body $body >> embedding --------- {}
+
+Ollama expects prompt, not input, for /api/embeddings.
+When we send "input": "...", many Ollama builds reply 200 but give "embedding": [] (exactly what
+
+src/lr/llm/ollama_client.py
+Before
+r = _client.post("/api/embeddings", json={
+    "model": settings.ollama_embed_model,
+    "input": t
+})
+
+After
+r = _client.post("/api/embeddings", json={
+    "model": settings.ollama_embed_model,
+    "prompt": t
+})
+
+scripts/test_embed.py
+Before
+r = c.post(f"{base}/api/embeddings", json={"model": model, "input": text})
+
+After
+r = c.post(f"{base}/api/embeddings", json={"model": model, "prompt": text})
+
+----------------------------------------------------

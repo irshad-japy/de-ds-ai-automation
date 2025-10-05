@@ -1,0 +1,48 @@
+1) Install Bun (and unzip)
+sudo apt update
+sudo apt install -y unzip curl build-essential ca-certificates
+curl -fsSL https://bun.sh/install | bash
+exec $SHELL -l
+bun --version
+
+2) Start Postgres with pgvector (Docker)
+docker run -d --name pg-sim \
+  -e POSTGRES_PASSWORD=postgres \
+  -e POSTGRES_DB=simstudio \
+  -p 5432:5432 \
+  pgvector/pgvector:pg17
+
+# enable vector (once)
+psql "postgresql://postgres:postgres@localhost:5432/simstudio" -c 'CREATE EXTENSION IF NOT EXISTS vector;'
+
+3) Env files (two places)
+DATABASE_URL=postgresql://postgres:postgres@localhost:5432/simstudio
+
+# App URLs / ports
+PORT=3000
+NEXT_PUBLIC_APP_URL=http://localhost:3000
+BETTER_AUTH_URL=http://localhost:3000
+
+# Realtime sockets
+SOCKET_PORT=3002
+NEXT_PUBLIC_SOCKET_URL=http://localhost:3002
+
+# Secrets (use your own randoms)
+BETTER_AUTH_SECRET=openssl-rand-hex-output
+ENCRYPTION_KEY=another-openssl-rand-hex
+
+TZ=Asia/Kolkata
+
+B) packages/db/.env
+DATABASE_URL=postgresql://postgres:postgres@localhost:5432/simstudio
+
+4) Run DB migrations (Drizzle)
+cd ~/projects/sim/packages/db
+bunx drizzle-kit migrate --config=./drizzle.config.ts
+# verify
+psql "postgresql://postgres:postgres@localhost:5432/simstudio" -c '\dt'
+
+5) Start dev servers
+cd ~/projects/sim
+bun run dev:full
+
