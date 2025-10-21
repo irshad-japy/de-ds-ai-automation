@@ -1,0 +1,16 @@
+6) “localhost” vs “host.docker.internal” — when to use what
+Where your Python (RAG) runs	Where Qdrant/Ollama run	What URL to use in your code
+Windows host (PowerShell/cmd)	Docker Desktop containers with published ports (e.g., -p 6333:6333, -p 11434:11434)	http://localhost:6333 and http://localhost:11434
+WSL2 (Ubuntu)	Docker Desktop (Windows)	Usually http://localhost:6333 / 11434 also works thanks to localhost forwarding; if not, use http://host.docker.internal:6333 / :11434. 
+Docker Community Forums
+
+A Docker container running your RAG	Same docker-compose as Qdrant/Ollama	Use service names on the shared network: http://qdrant:6333, http://ollama:11434.
+A Docker container running your RAG	Services on host (Windows)	Use http://host.docker.internal:<port> (Docker Desktop feature). 
+Docker Community Forums
++1
+
+Linux Docker (no Desktop)	Services on host	host.docker.internal may not exist; use the host gateway IP (often 172.17.0.1) or --add-host=host.docker.internal:host-gateway. 
+Docker Community Forums
++1
+
+So in your case (code runs on Windows host, Qdrant & Ollama are in Docker with ports published): stick with localhost. Only switch to host.docker.internal when the client is inside a container and the server is on the host.

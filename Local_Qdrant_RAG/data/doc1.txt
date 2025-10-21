@@ -1,0 +1,23 @@
+These are taken directly from the repo’s README usage and file names:
+
+main.py — a simple script that instantiates RAG, builds a Qdrant index via rag.qdrant_index(), constructs a Query, and calls rag.get_response(...). The README shows the pattern (host, model, base URL, response_mode, etc.). 
+GitHub
+
+utils/qdrant_data_helper.py — holds the higher-level orchestration:
+
+DataIngestor: reads the data/ folder, embeds chunks, and upserts them to Qdrant (collection name, embedder name come from constructor). The README demonstrates creating this and calling ingest(). 
+GitHub
+
+RAG: wraps Qdrant retrieval + an LLM (Ollama) via LlamaIndex; exposes:
+
+qdrant_index(collection_name, chunk_size) → returns a retriever/index object
+
+get_response(index, query, append_query, response_mode) → calls the LLM with retrieved context and returns a result (search_result, source are printed in README). 
+GitHub
+
+Query: tiny dataclass-like for query and top_k. (Shown in README.) 
+GitHub
+
+utils/format.py — utility helpers to format prompts/chunks/metadata (naming strongly suggests string formatting helpers used by RAG).
+
+utils/text_transformatuons.py — text cleaning & normalization helpers (e.g., strip/normalize whitespace, remove weird characters), used by ingestion before embedding.

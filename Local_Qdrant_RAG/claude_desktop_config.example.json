@@ -1,0 +1,18 @@
+{
+  "mcpServers": {
+    "local-qdrant-rag": {
+      "command": "python",
+      "args": [
+        "-m",
+        "mcp_server.server"
+      ],
+      "env": {
+        "QDRANT_URL": "http://localhost:6333",
+        "OLLAMA_BASE": "http://localhost:11434",
+        "OLLAMA_MODEL": "llama3.1:latest",
+        "COLLECTION_NAME": "dcard_collection",
+        "EMBEDDER_NAME": "sentence-transformers/all-mpnet-base-v2"
+      }
+    }
+  }
+}

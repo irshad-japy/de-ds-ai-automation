@@ -1,0 +1,73 @@
+
+*** Suggested changes to `audio_storybot/app.py` (unified diff) ***
+
+--- a/audio_storybot/app.py
++++ b/audio_storybot/app.py
+@@
+- OLLAMA_MODEL = os.getenv("OLLAMA_MODEL", "llama3.1")               # e.g. llama3.1, qwen2.5:14b, etc.
++ OLLAMA_MODEL = os.getenv("OLLAMA_MODEL", "llama3.1:latest")        # default to an explicit tag
+
+@@
+- MAX_BYTES    = 2 * 1024 * 1024                                     # 2 MB cap to avoid huge/binary blobs
++ MAX_BYTES    = 512 * 1024                                          # tighten to 512 KB; we only need code/text, avoids huge fetch
+
+@@
+-from pydantic import BaseModel, field_validator
++from pydantic import BaseModel, field_validator
++from typing import Literal
+@@
+-class Controls(BaseModel):
+-    target_audience: str = "Beginner"
+-    tone: str = "calm"
+-    humor_level: int = 1
+-    reading_time_sec: int = 90
+-    target_words: int = 180
+-    analogy_domain: Optional[str] = None
+-    language: str = "English"
++class Controls(BaseModel):
++    target_audience: Literal["Beginner","Intermediate","Advanced"] = "Beginner"
++    tone: str = "calm"
++    humor_level: int = 1
++    reading_time_sec: int = 90
++    target_words: int = 180
++    analogy_domain: Optional[str] = None
++    language: str = "English"
+@@
+-    @field_validator("humor_level")
++    @field_validator("humor_level")
+     def _humor(cls, v):
+         if not (0 <= v <= 3):
+             raise ValueError("humor_level must be 0..3")
+         return v
++    @field_validator("reading_time_sec", "target_words")
++    def _positive(cls, v):
++        if v <= 0:
++            raise ValueError("must be positive")
++        return v
+@@
+-# Build a single prompt for **any file type** (py, js, json, yml, sql, txt, md, etc.)
++# Build a single prompt for **any file type** (py, js, tsx, json, yml, sql, txt, md, etc.)
+ def make_prompt(filename: str, content: str, mode: str, controls: Controls, prose_language: str) -> str:
+@@
+-Respond only with the {'story' if mode == 'story' else 'script'} in the specified structure and language.
+-If the file is not Python, still explain the logic faithfu
++Respond only with the STORY if mode=story, else with the SCRIPT (no extra comments).
++If the file is not Python, still explain the logic faithfully for its language (JS, TSX, SQL, YAML, etc.).
++If the content looks like configuration (JSON/YAML), derive a narrative that explains what it configures and why.
+@@
+-# POST /explain
++# POST /explain  — accepts either file_path or file_url
+ @app.post("/explain")
+ def explain(req: RequestModel):
+@@
+-    # Fetch bytes from either path or URL
++    # Fetch bytes from either path or URL; treat anything non-text as error
+     raw = fetch_content(req.file_path, req.file_url)
+     if len(raw) > MAX_BYTES:
+         raise HTTPException(status_code=413, detail="File too large for this endpoint")
+@@
+-    # gTTS synthesis (optional)
++    # gTTS synthesis (optional)
+     if req.language.lower().startswith("en"):
+         tts = gTTS(text=story_or_script, lang="en")
+*** End patch ***

@@ -14,7 +14,6 @@ $env:PYTHONPATH = "src"
 poetry run python scripts/ingest.py --folder .\input
 poetry run uvicorn lr.api.main:app --reload --host 0.0.0.0 --port 8080
 
-
 # 3) start API
 poetry run uvicorn lr.api.main:app --reload --port 8080
 
