@@ -30,10 +30,6 @@ Invoke-RestMethod `
 run story_explain command
 # audio_storybot
 
-### Run
-```bash
-pip install -r requirements.txt
-uvicorn app:app --host 0.0.0.0 --port 8099
 ```
 Then POST to `/explain` with either `file_path` or `file_url`.
 
@@ -118,3 +114,17 @@ try {
 } catch {
   "ERROR: $($_.Exception.Response.StatusCode.value__)"
 }
+
+
+-------------------------------------------------------------------
+# below notes of local video script generator 
+🧠 1️⃣ Available Whisper Model Options
+| Model Name         | Size     | Description                                            | Accuracy | Speed | Recommended Use                               |
+| ------------------ | -------- | ------------------------------------------------------ | -------- | ----- | --------------------------------------------- |
+| `tiny`             | ~39 MB   | Very small, fast, low accuracy                         | ⭐        | ⚡⚡⚡⚡  | For quick tests, short clips                  |
+| `base`             | ~74 MB   | Small model, decent accuracy                           | ⭐⭐       | ⚡⚡⚡   | For short, simple speech                      |
+| `small`            | ~244 MB  | Good accuracy for English and major languages          | ⭐⭐⭐      | ⚡⚡    | Good balance for laptops                      |
+| `medium`           | ~769 MB  | High accuracy, slower                                  | ⭐⭐⭐⭐     | ⚡     | Best for long or multi-language               |
+| `large`            | ~1.55 GB | Highest accuracy, multilingual                         | ⭐⭐⭐⭐⭐    | 🐢    | Best for Hindi, multilingual, and long videos |
+| `large-v2`         | ~1.55 GB | Optimized version of `large` (better accuracy + speed) | ⭐⭐⭐⭐⭐    | 🐢    | Recommended for production                    |
+| `large-v3` *(new)* | ~1.6 GB  | Latest, fastest + most accurate                        | ⭐⭐⭐⭐⭐⭐   | 🐢    | Best overall if you have GPU                  |
