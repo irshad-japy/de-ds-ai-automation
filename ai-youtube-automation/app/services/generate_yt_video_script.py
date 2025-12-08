@@ -3,7 +3,6 @@ python ai-youtube-automation/app/services/generate_yt_video_script.py
 """
 
 from youtube_transcript_api import YouTubeTranscriptApi, TranscriptsDisabled, NoTranscriptFound
-from difflib import SequenceMatcher
 from fastapi import HTTPException
 import re, os, datetime
 
@@ -18,14 +17,12 @@ def extract_video_id(url: str) -> str:
             return match.group(1)
     raise HTTPException(status_code=400, detail="Invalid YouTube URL")
 
-
 # -------------------------------------------------------
 # 🔹 Normalize Text for Comparison
 # -------------------------------------------------------
 def normalize(text: str) -> str:
     text = re.sub(r"\s+", " ", text).strip()
     return text.lower().strip(" .!?।")
-
 
 # -------------------------------------------------------
 # 🔹 Merge Transcript with De-duplication
@@ -75,7 +72,7 @@ def fetch_and_save_transcript(url: str, languages=None):
     file_path = os.path.join("output", f"{video_id}_transcript_{datetime.datetime.now():%Y%m%d_%H%M%S}.txt")
     with open(file_path, "w", encoding="utf-8") as f:
         f.write(text + "\n")
-
+    
     print(f"✅ Transcript saved successfully: {file_path}")
     return file_path
 

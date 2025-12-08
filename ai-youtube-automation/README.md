@@ -79,10 +79,8 @@ $response = Invoke-RestMethod -Method Post -Uri "http://localhost:8099/explain" 
 $response.meta.saved_to
 "Saved output.mp3 locally and also on server."
 
-
 # Does the file actually exist?
 Test-Path 'C:\Users\erirs\projects\ird-projects\de_ds_ai_automation\ai-learning-productivity\audio_storybot\app.py'
-
 
 C) With background music (after installing ffmpeg)
 $bg = (Resolve-Path .\assets\soft-bg.mp3).Path -replace '\\','/'
@@ -115,7 +113,6 @@ try {
   "ERROR: $($_.Exception.Response.StatusCode.value__)"
 }
 
-
 -------------------------------------------------------------------
 # below notes of local video script generator 
 🧠 1️⃣ Available Whisper Model Options
@@ -128,3 +125,19 @@ try {
 | `large`            | ~1.55 GB | Highest accuracy, multilingual                         | ⭐⭐⭐⭐⭐    | 🐢    | Best for Hindi, multilingual, and long videos |
 | `large-v2`         | ~1.55 GB | Optimized version of `large` (better accuracy + speed) | ⭐⭐⭐⭐⭐    | 🐢    | Recommended for production                    |
 | `large-v3` *(new)* | ~1.6 GB  | Latest, fastest + most accurate                        | ⭐⭐⭐⭐⭐⭐   | 🐢    | Best overall if you have GPU                  |
+
+---------------------------------------------------------------------------------------------------
+run youtube automation script
+
+cd C:\Users\erirs\projects\ird-projects\de_ds_ai_automation\ai-youtube-automation
+
+python yt_uploader.py `
+  --video-file "C:\Users\erirs\projects\ird-projects\de_ds_ai_automation\ai-youtube-automation\output\abcd1234_hi_merged.mp4" `
+  --title "AI DS Automation Demo (Hindi)" `
+  --description "Demo video uploaded automatically via Python script." `
+  --tags "ai,automation,python,hindi" `
+  --category-id 27 `
+  --privacy-status public `
+  --default-language hi `
+  --made-for-kids `
+  --recording-date 2025-12-05
