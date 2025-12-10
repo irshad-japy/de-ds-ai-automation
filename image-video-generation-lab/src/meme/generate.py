@@ -2,7 +2,6 @@ import argparse, time, os
 from pathlib import Path
 from typing import Optional
 from PIL import Image, ImageDraw, ImageFont
-
 from t2i.generate import generate_image
 from utils.paths import MEMES_DIR
 

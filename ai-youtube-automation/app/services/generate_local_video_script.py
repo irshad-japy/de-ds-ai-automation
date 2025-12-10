@@ -110,5 +110,5 @@ def process_local_video(video_path: str, model_name="base"):
 # 🔹 Run from CLI
 # -------------------------------------------------------
 if __name__ == "__main__":
-    local_video_path = "C:/Users/erirs/projects/ird-projects/de_ds_ai_automation/ai-youtube-automation/assets/video/demo.mp4"  # 🔁 change this to your local file
+    local_video_path = "C:/Users/ermdi/Videos/Screen Recordings/Screen Recording 2025-12-08 200452.mp4"  # 🔁 change this to your local file
     process_local_video(local_video_path, model_name="small")

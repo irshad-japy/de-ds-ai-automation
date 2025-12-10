@@ -80,5 +80,5 @@ def fetch_and_save_transcript(url: str, languages=None):
 # 🔹 Run Directly (For Manual Testing)
 # -------------------------------------------------------
 if __name__ == "__main__":
-    url = "https://www.youtube.com/watch?v=GKkU1smMGiA"
+    url = "https://www.youtube.com/watch?v=ROmtgqTefAw&t=2s"
     fetch_and_save_transcript(url, languages=['de', 'en', 'hi'])

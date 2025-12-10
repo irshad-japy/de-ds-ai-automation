@@ -18,6 +18,11 @@ from utils.text import enhance_prompt  # noqa: F401 (optional use)
 
 load_dotenv()
 
+MODEL_OPTIONS = {
+    "SD 2.1 (very fast generation)": "stabilityai/sd-turbo",
+    "High-capacity model": "stabilityai/sdxl-turbo",
+    "Stable Diffusion 3.5 Large / Large-Turbo": "stabilityai/stable-diffusion-3.5-large-turbo",
+}
 
 # =========================
 # Image Tab (Text-to-Image)
@@ -32,14 +37,13 @@ def ui_t2i(prompt, negative, width, height, steps, guidance, seed, model, enhanc
             steps=steps,
             guidance=guidance,
             seed=int(seed) if seed else None,
-            model_id=model or os.getenv("MODEL_ID", "stabilityai/sd-turbo"),
+            model_id=MODEL_OPTIONS.get(model, os.getenv("MODEL_ID", "stabilityai/sd-turbo")),
             enhance=enhance,
             out_dir=IMAGES_DIR,
         )
         return str(path), str(path)  # path for textbox + filepath for gr.Image
     except Exception as e:
         return f"ERROR: {e}", None
-
 
 # =================
 # Meme Tab Helpers
@@ -50,12 +54,11 @@ def ui_meme_use_prompt(bg_prompt, top, bottom, model):
             bg_prompt,
             top,
             bottom,
-            model_id=model or os.getenv("MODEL_ID", "stabilityai/sd-turbo"),
+            model_id=MODEL_OPTIONS.get(model, os.getenv("MODEL_ID", "stabilityai/sd-turbo")),model_id=model or os.getenv("MODEL_ID", "stabilityai/sd-turbo"),
         )
         return str(p), str(p)
     except Exception as e:
         return f"ERROR: {e}", None
-
 
 def ui_meme_use_upload(upload, top, bottom):
     if upload is None:
@@ -65,7 +68,6 @@ def ui_meme_use_upload(upload, top, bottom):
         return str(p), str(p)
     except Exception as e:
         return f"ERROR: {e}", None
-
 
 # ===========================
 # Shorts / Video Tab Helpers
@@ -106,7 +108,6 @@ def ui_shorts(script, slides, seconds, model, voice):
     srt = srts[-1] if srts else None
     return console, (str(vid) if vid else ""), (str(srt) if srt else ""), (str(vid) if vid else None)
 
-
 # ===============
 # Voice / TTS API
 # ===============
@@ -127,11 +128,9 @@ def _ui_tts(provider, text, voice_id, model_tts):
     except Exception as e:
         return f"ERROR: {e}", None
 
-
 def _canon_file_path(f):
     # Works with gr.Files across versions: try .name (temp path), then .path, else string
     return getattr(f, "name", None) or getattr(f, "path", None) or (f if isinstance(f, str) else None)
-
 
 def _ui_clone(name, files):
     from voice.tts import clone_voice_elevenlabs
@@ -144,7 +143,6 @@ def _ui_clone(name, files):
         return "Cloned successfully.", vid
     except Exception as e:
         return f"ERROR: {e}", ""
-
 
 # ===============
 # Gradio UI
@@ -175,9 +173,10 @@ with gr.Blocks(title="Image & Video Generation Lab", theme=gr.themes.Soft()) as 
                         )
                     with gr.Row():
                         seed = gr.Textbox(label="Seed (blank = random)", value="")
-                        model = gr.Textbox(
-                            label="Model ID",
-                            value=os.getenv("MODEL_ID", "stabilityai/sd-turbo"),
+                        model = gr.Dropdown(
+                            label="Select Model",
+                            choices=list(MODEL_OPTIONS.keys()),
+                            value="SD 2.1 (very fast generation)",  # default label
                         )
                     enhance = gr.Checkbox(
                         label="Enhance with cinematic/8k keywords", value=True
@@ -205,9 +204,10 @@ with gr.Blocks(title="Image & Video Generation Lab", theme=gr.themes.Soft()) as 
                     )
                     top = gr.Textbox(label="Top Text", value="WHEN PROD WORKS")
                     bottom = gr.Textbox(label="Bottom Text", value="AND YOU DID NOTHING")
-                    model2 = gr.Textbox(
-                        label="Model ID",
-                        value=os.getenv("MODEL_ID", "stabilityai/sd-turbo"),
+                    model2 = gr.Dropdown(
+                        label="Select Model",
+                        choices=list(MODEL_OPTIONS.keys()),
+                        value="SD 2.1 (very fast generation)",
                     )
                     btn_meme_a = gr.Button("Create Meme from Prompt")
                 with gr.Column():
@@ -238,9 +238,10 @@ with gr.Blocks(title="Image & Video Generation Lab", theme=gr.themes.Soft()) as 
                     )
                     slides = gr.Slider(3, 12, value=5, step=1, label="Slides (images)")
                     seconds = gr.Slider(2, 8, value=3, step=1, label="Seconds per slide")
-                    model3 = gr.Textbox(
-                        label="Model ID",
-                        value=os.getenv("MODEL_ID", "stabilityai/sd-turbo"),
+                    model3 = gr.Dropdown(
+                        label="Select Model",
+                        choices=list(MODEL_OPTIONS.keys()),
+                        value="SD 2.1 (very fast generation)",
                     )
                     voice = gr.Textbox(
                         label="ElevenLabs Voice ID (optional; uses .env default if blank)"
@@ -333,7 +334,6 @@ with gr.Blocks(title="Image & Video Generation Lab", theme=gr.themes.Soft()) as 
             btn_clone.click(
                 _ui_clone, [clone_name, clone_files], [clone_status, clone_voice_id]
             )
-
 
 if __name__ == "__main__":
     demo.launch()

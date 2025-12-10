@@ -14,7 +14,7 @@ class Settings(BaseModel):
     INSTAGRAM_ACCESS_TOKEN: str | None = os.getenv("INSTAGRAM_ACCESS_TOKEN")
     INSTAGRAM_BUSINESS_ID: str | None = os.getenv("INSTAGRAM_BUSINESS_ID")
 
-    ELEVENLABS_API_KEY: str | None = os.getenv("ELEVENLABS_API_KEY")
+    ELEVENLABS_API_KEY: str | None = os.getenv("ELEVENLABS_API_KEY", "sk_bcdb849f7a903076c4fb58d06a7cce041dd170154c4373f1")
     OPENAI_API_KEY: str | None = os.getenv("OPENAI_API_KEY")
 
     ARTIFACTS_DIR: str = os.getenv("ARTIFACTS_DIR", "artifacts")
