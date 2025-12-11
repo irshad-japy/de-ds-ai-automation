@@ -1,6 +1,7 @@
 """
-python .\test\merge_dub_test.py
+python app/services/voice_to_video_merge_debug.py
 """
+
 
 import os
 import subprocess
@@ -10,9 +11,9 @@ from pydub import AudioSegment
 
 # ---------------------------------------------------------------
 # user-defined inputs
-VIDEO_FILE = r"C:\Users\ermdi\projects\ird-projects\de-ds-ai-automation\ai-youtube-automation\assets\video\final_merge_14_scene.mp4"
-DUBBED_AUDIO = r"C:\Users\ermdi\projects\ird-projects\de-ds-ai-automation\ai-youtube-automation\assets\audio\bg_lofi_01.mp3"
-OUTPUT_FILE = r"C:\Users\ermdi\projects\ird-projects\de-ds-ai-automation\ai-youtube-automation\output\final_merge_14_scene_voice.mp4"
+VIDEO_FILE = r"C:\Users\erirs\projects\ird-projects\de_ds_ai_automation\ai-youtube-automation\assets\video\mcp_server_poc.mp4"
+DUBBED_AUDIO = r"C:\Users\erirs\projects\ird-projects\de_ds_ai_automation\ai-youtube-automation\output\clone_voice\clone_voice\mcp_server_poc.wav"
+OUTPUT_FILE = r"C:\Users\erirs\projects\ird-projects\de_ds_ai_automation\ai-youtube-automation\output\clone_voice\final_mcp_server_poc_video.mp4"
 LANG_CODE = "en"
 # ---------------------------------------------------------------
 

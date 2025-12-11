@@ -1,7 +1,6 @@
 from typing import Optional, List, Tuple, Dict
 import httpx
 from ..utils.config import settings
-from ..utils.logging import logger
 
 HASHNODE_ENDPOINT = "https://gql.hashnode.com"
 
@@ -99,7 +98,7 @@ async def publish_to_hashnode(
 
     async with httpx.AsyncClient(timeout=60) as client:
         response = await client.post(HASHNODE_ENDPOINT, json=payload, headers=headers)
-        logger.info(f"Hashnode raw response: {response.text}")
+        print(f"Hashnode raw response: {response.text}")
 
         try:
             response.raise_for_status()

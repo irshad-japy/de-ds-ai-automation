@@ -1,6 +1,5 @@
 from pathlib import Path
 import pyttsx3
-from ..utils.logging import logger
 
 def tts_offline(text: str, out_path: Path) -> Path:
     """
@@ -23,5 +22,5 @@ def tts_offline(text: str, out_path: Path) -> Path:
     engine.save_to_file(text, str(out_path))
     engine.runAndWait()
 
-    logger.info(f"✅ Saved narration TTS to {out_path}")
+    print(f"✅ Saved narration TTS to {out_path}")
     return out_path

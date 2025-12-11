@@ -1,5 +1,4 @@
 from ..utils.config import settings
-from ..utils.logging import logger
 import httpx
 
 async def post_linkedin(text: str) -> dict:
@@ -8,7 +7,7 @@ async def post_linkedin(text: str) -> dict:
     # Minimal sample (replace with full UGC Post call)
     headers = {"Authorization": f"Bearer {settings.LINKEDIN_ACCESS_TOKEN}"}
     # TODO: Implement full LinkedIn UGC API per docs
-    logger.info("LinkedIn posting placeholder executed")
+    print("LinkedIn posting placeholder executed")
     return {"status": "ok"}
 
 async def post_facebook_page(message: str, link: str) -> dict:
@@ -26,5 +25,5 @@ async def post_instagram_caption(caption: str, link: str) -> dict:
     if not settings.INSTAGRAM_ACCESS_TOKEN or not settings.INSTAGRAM_BUSINESS_ID:
         return {"status": "skipped", "reason": "no ig token/biz id"}
     # For links, IG requires bio/link-in-bio workflows; here we include caption only.
-    logger.info("Instagram posting placeholder executed")
+    print("Instagram posting placeholder executed")
     return {"status": "ok"}
