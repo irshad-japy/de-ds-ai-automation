@@ -9,10 +9,10 @@ MY_SPEAKER_ID = "deepakVoice01"
 
 def main():
     # English
-    tts_with_cached_speaker(
+    output_path = tts_with_cached_speaker(
         text="This is our second episode on Vande Mataram. In this episode, we talk about Anandamath and Mahatma Gandhi’s views. This video is also a bit long. After this, there will be a third video as well, based on the debate that took place in the Lok Sabha today. Stay tuned for that too.",
         speaker_id=MY_SPEAKER_ID,
-        out_path="clone_voice/deepak_en.wav",
+        out_path="C:/Users/ermdi/projects/ird-projects/de-ds-ai-automation/ai-youtube-automation/output/clone_voice/deepak_en.wav",
         language="en",
     )
 

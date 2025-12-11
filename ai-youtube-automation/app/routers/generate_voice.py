@@ -98,20 +98,11 @@ async def generate_voice_api(payload: VoiceRequest):
                 detail=f"Voice file not found at path: {path}",
             )
 
-        # media type based on extension
-        if str(path).lower().endswith(".mp3"):
-            media_type = "audio/mpeg"
-        else:
-            media_type = "audio/wav"
+        # ✅ Convert to absolute/full path
+        full_path = str(Path(path).resolve())
 
-        return FileResponse(
-            path,
-            media_type=media_type,
-            filename=os.path.basename(path),
-        )
-
-    except HTTPException:
-        # re-raise our own HTTP errors
-        raise
+        # ✅ Return only output_path with full location
+        return {"output_path": full_path}
+    
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Error generating voice: {e}")
