@@ -26,11 +26,22 @@ DURATION_TOLERANCE = 0.10  # seconds (set small >0 to avoid tiny differences)
 # Duration helpers
 # -------------------------------------------------------
 def get_duration(path: str | Path) -> float:
-    """Return media duration in seconds using ffmpeg.probe."""
+    """Return media duration in seconds using ffprobe (stable, no ffmpeg-python needed)."""
     path = str(path)
-    probe = ffmpeg.probe(path)
-    return float(probe["format"]["duration"])
-
+    cmd = [
+        "ffprobe",
+        "-v", "error",
+        "-show_entries", "format=duration",
+        "-of", "default=noprint_wrappers=1:nokey=1",
+        path,
+    ]
+    try:
+        out = subprocess.check_output(cmd, text=True).strip()
+        return float(out)
+    except subprocess.CalledProcessError as e:
+        raise RuntimeError(f"ffprobe failed for {path}: {e.output}") from e
+    except Exception as e:
+        raise RuntimeError(f"Could not parse duration for {path}: {e}") from e
 
 # -------------------------------------------------------
 # Trim helpers
@@ -52,7 +63,6 @@ def trim_audio_to_duration(audio_path: Path, target_duration: float) -> Path:
     dur_trimmed = get_duration(trimmed_path)
     print(f"[INFO] Audio trimmed: {dur_trimmed:.2f}s -> {trimmed_path}")
     return trimmed_path
-
 
 def trim_video_to_duration(video_path: Path, target_duration: float) -> Path:
     """Trim video from end to target_duration. Writes <stem>_trimmed.mp4"""
@@ -134,7 +144,6 @@ def prepare_media_for_merge(
         print("[INFO] No pre-trim applied (mode='none' or condition not met).")
 
     return final_video, final_audio
-
 
 # -------------------------------------------------------
 # Merge (core)

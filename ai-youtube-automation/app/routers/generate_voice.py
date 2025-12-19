@@ -5,30 +5,39 @@ from fastapi.responses import FileResponse
 from pydantic import BaseModel
 from typing import Literal, Optional
 from pathlib import Path
-import os
+import os, gc, logging
+from datetime import datetime
 
-from ..services.generate_voice import generate_voice as eleven_generate_voice
-from ..services.generate_voice_2 import generate_voice as default_generate_system_voice
-from ..services.xtts_voice_helper import tts_with_cached_speaker
+from app.services.generate_voice import generate_voice as eleven_generate_voice
+from app.services.generate_voice_2 import generate_voice as default_generate_system_voice
+from app.services.xtts_voice_helper import tts_with_cached_speaker
+from app.utils.structured_logging import get_logger
+from app.utils.resource_monitor import resource_monitor
+
+import asyncio
+HEAVY_JOB_SEM = asyncio.Semaphore(1)
+from app.utils.subprocess_runner import run_worker, SubprocessError
 
 router = APIRouter(prefix="/generate_voice", tags=["generate"])
 
+logger = get_logger("test_module", logging.DEBUG, log_dir="logs")
 # ---------- Request body model ----------
 
 class VoiceRequest(BaseModel):
     text: str
-    # which engine to use
     service_model: Literal["TTS", "ElevenLabs", "Default"] = "Default"
-    # speaker_id is optional overall, but required for some engines
     speaker_id: Optional[str] = None
-    # language optional, default English
     language: str = "en"
-    # optional full or relative path; if None, we auto-generate
-    out_path: Optional[str] = None
 
 # ---------- Endpoint ----------
-
 @router.post("/generate-voice")
+@resource_monitor(
+    logger,
+    include_gpu=True,
+    slow_ms_threshold=0,  # set 0 while testing
+    sample_rate=1,
+    tag="text_to_voice",
+)
 async def generate_voice_api(payload: VoiceRequest):
     """
     Generate voice for given text using XTTS (TTS), ElevenLabs or default system voice.
@@ -37,72 +46,41 @@ async def generate_voice_api(payload: VoiceRequest):
     - `out_path` is optional (default: auto file name under ./outputs)
     - `service_model` "TTS", "ElevenLabs", "Default"
     """
-
+    # async with HEAVY_JOB_SEM:
     try:
-        # Ensure output directory
-        base_dir = Path("clone_voice")
-        base_dir.mkdir(exist_ok=True)
+        project_root = Path(__file__).resolve().parents[2]
+        output_dir = project_root / "output" / "clone_voice"
+        output_dir.mkdir(parents=True, exist_ok=True)
 
-        # Decide output file path
-        if payload.out_path:
-            out_path = Path(payload.out_path)
-            # if a bare filename is passed, save it under outputs/
-            if not out_path.is_absolute():
-                out_path = base_dir / out_path
-        else:
-            # simple default name based on service_model
-            ext = ".wav"
-            out_path = base_dir / f"{payload.service_model.lower()}_voice{ext}"
+        ext = ".wav"
 
-        # Make sure parent folder exists
-        out_path.parent.mkdir(parents=True, exist_ok=True)
+        # ✅ unique suffix: YYYYMMDD_HHMMSS_microseconds
+        ts = datetime.now().strftime("%Y%m%d_%H%M%S")
 
-        # ---------- Select engine ----------
-        if payload.service_model == "TTS":
-            # XTTS typically needs a speaker_id
-            if not payload.speaker_id:
-                raise HTTPException(
-                    status_code=400,
-                    detail="speaker_id is required when service_model='TTS'",
-                )
-            path = tts_with_cached_speaker(
-                text=payload.text,
-                speaker_id=payload.speaker_id,
-                out_path=str(out_path),
-                language=payload.language,
-            )
+        out_filename = f"{payload.service_model.lower()}_voice_{ts}{ext}"
+        out_path = output_dir / out_filename
 
-        elif payload.service_model == "ElevenLabs":
-            if not payload.speaker_id:
-                raise HTTPException(
-                    status_code=400,
-                    detail="speaker_id is required when service_model='ElevenLabs'",
-                )
-            path = eleven_generate_voice(
-                text=payload.text,
-                speaker_id=payload.speaker_id,
-                out_path=str(out_path),
-                language=payload.language,
-            )
+        worker_payload = payload.model_dump()
+        worker_payload["out_path"] = str(out_path)
 
-        else:  # "Default"
-            path = default_generate_system_voice(
-                text=payload.text,
-                out_path=str(out_path),
-            )
+        result_raw = run_worker("app.workers.voice_worker", worker_payload)
+
+        lines = [ln.strip() for ln in str(result_raw).splitlines() if ln.strip()]
+        result_path = lines[-1]
 
         # ---------- Validate file & return ----------
-        if not os.path.exists(path):
+        if not os.path.exists(result_path):
             raise HTTPException(
                 status_code=500,
-                detail=f"Voice file not found at path: {path}",
+                detail=f"Voice file not found at path: {result_path}",
             )
 
         # ✅ Convert to absolute/full path
-        full_path = str(Path(path).resolve())
+        full_path = Path(result_path).resolve().as_posix()
 
         # ✅ Return only output_path with full location
-        return {"output_path": full_path}
+        return full_path
     
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Error generating voice: {e}")
+    

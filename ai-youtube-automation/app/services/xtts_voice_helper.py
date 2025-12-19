@@ -19,7 +19,6 @@ from functools import lru_cache
 import torch
 from TTS.api import TTS
 
-
 # =====================================================
 # Global configuration
 # =====================================================
@@ -48,7 +47,7 @@ def _get_device() -> str:
     1. XTTS_DEVICE environment variable: "cuda", "cpu", or "auto" (default)
     2. If auto: use CUDA when available, else CPU.
     """
-    env_device = os.getenv("XTTS_DEVICE", "auto").lower()
+    env_device = os.getenv("XTTS_DEVICE", "cuda").lower()
 
     if env_device == "cpu":
         device = "cpu"
@@ -63,7 +62,6 @@ def _get_device() -> str:
 
     print(f"[XTTS] Using device: {device}")
     return device
-
 
 @lru_cache(maxsize=2)
 def _get_tts(model_name: str) -> TTS:
@@ -149,8 +147,8 @@ def clone_voice_once(
         file_path=str(test_out),
     )
 
-    print(f"✅ Voice cloned and cached under speaker_id='{speaker_id}'")
-    print(f"✅ Test file written: {test_out}")
+    print(f"Voice cloned and cached under speaker_id='{speaker_id}'")
+    print(f"Test file written: {test_out}")
     return test_out
 
 def tts_with_cached_speaker(
@@ -170,11 +168,13 @@ def tts_with_cached_speaker(
     model_name = model_name or MODEL_NAME
     language = _normalize_language(language)
 
-    out_file = Path(out_path).expanduser()
+    out_file = Path(out_path)
     # If out_path is relative, place it under OUTPUT_ROOT
     if not out_file.is_absolute():
         out_file = OUTPUT_ROOT / out_file
     _ensure_parent_dir(out_file)
+
+    print(f'final output path: {out_path}')
 
     tts = _get_tts(model_name)
     tts.tts_to_file(
@@ -184,6 +184,4 @@ def tts_with_cached_speaker(
         file_path=str(out_file),
     )
 
-    print(f"✅ Generated TTS using speaker_id='{speaker_id}' "
-          f"(lang='{language}') → {out_file}")
     return out_file

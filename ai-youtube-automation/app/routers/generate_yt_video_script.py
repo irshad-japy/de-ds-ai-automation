@@ -1,7 +1,6 @@
 from fastapi import FastAPI, HTTPException, Form, APIRouter
 from googletrans import Translator
-
-from ..services.generate_yt_video_script import extract_video_id, fetch_and_save_transcript
+from app.services.generate_yt_video_script import extract_video_id, fetch_and_save_transcript
 
 translator = Translator()
 
