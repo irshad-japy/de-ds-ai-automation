@@ -1,9 +1,9 @@
 """
-python app/services/reuse_multi_language_example.py
+python -m app.services.reuse_multi_language_example
 """
 
 # reuse_multi_language_example.py
-from xtts_voice_helper import tts_with_cached_speaker
+from app.services.xtts_voice_helper import tts_with_cached_speaker
 
 MY_SPEAKER_ID = "deepakVoice01"
 

@@ -9,8 +9,12 @@ Output: .wav (offline TTS)
 
 import os
 import pyttsx3
+import logging
 from pathlib import Path
 from typing import Optional
+from app.utils.file_cache import cache_file
+from app.utils.structured_logging import get_logger, log_message
+logger = get_logger("generate_voice_system", logging.DEBUG)
 
 def _ensure_parent_dir(path: Path) -> None:
     """Create parent directory for the given file path if needed."""
@@ -19,6 +23,7 @@ def _ensure_parent_dir(path: Path) -> None:
 # ===================================================
 # ✅ Generate voice using pyttsx3 (offline)
 # ===================================================
+@cache_file("output/cache", namespace="audio", ext=".wav", out_arg="out_path")
 def generate_voice(text: str, out_path: str = "clone_voice/voice_output.wav"):
     # Extract text
     # text = extract_text_from_file(script_path)
@@ -42,12 +47,12 @@ def generate_voice(text: str, out_path: str = "clone_voice/voice_output.wav"):
     engine.setProperty('rate', 175)                # speed
     engine.setProperty('volume', 1.0)              # 0.0 to 1.0
 
-    print("🎙️ Generating offline voice...")
+    logger.info("🎙️ Generating offline voice...")
     engine.save_to_file(text, str(out_path))
     engine.runAndWait()
 
     resolved = out_path.resolve()
-    print(f"✅ Voice generated: {resolved}")
+    logger.info(f"✅ Voice generated: {resolved}")
     return resolved
 
 # ===================================================

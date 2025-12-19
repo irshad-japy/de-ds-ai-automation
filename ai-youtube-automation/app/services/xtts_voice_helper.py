@@ -15,9 +15,12 @@ import os
 from pathlib import Path
 from typing import Optional
 from functools import lru_cache
-
+from app.utils.file_cache import cache_file
 import torch
 from TTS.api import TTS
+import logging
+from app.utils.structured_logging import get_logger, log_message
+logger = get_logger("xtts_voice_helper", logging.DEBUG)
 
 # =====================================================
 # Global configuration
@@ -151,6 +154,7 @@ def clone_voice_once(
     print(f"Test file written: {test_out}")
     return test_out
 
+@cache_file("output/cache", namespace="audio", ext=".wav", out_arg="out_path")
 def tts_with_cached_speaker(
     text: str,
     speaker_id: str,

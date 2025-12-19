@@ -154,7 +154,7 @@ class CustomRotatingFileHandler(RotatingFileHandler):
 # ────────────────────────────────────────────────────────────────────────────────
 # Logger Getter Function
 # ────────────────────────────────────────────────────────────────────────────────
-def get_logger(module_name, log_level=logging.INFO, log_dir=None):
+def get_logger(module_name, log_level=logging.INFO, log_dir='logs'):
     """
     Retrieve a logger configured for a specific module.
 

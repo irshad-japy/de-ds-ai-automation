@@ -8,10 +8,7 @@ from pathlib import Path
 import os, gc, logging
 from datetime import datetime
 
-from app.services.generate_voice import generate_voice as eleven_generate_voice
-from app.services.generate_voice_2 import generate_voice as default_generate_system_voice
-from app.services.xtts_voice_helper import tts_with_cached_speaker
-from app.utils.structured_logging import get_logger
+from app.services.xtts_voice_helper import logger
 from app.utils.resource_monitor import resource_monitor
 
 import asyncio
@@ -20,7 +17,6 @@ from app.utils.subprocess_runner import run_worker, SubprocessError
 
 router = APIRouter(prefix="/generate_voice", tags=["generate"])
 
-logger = get_logger("test_module", logging.DEBUG, log_dir="logs")
 # ---------- Request body model ----------
 
 class VoiceRequest(BaseModel):

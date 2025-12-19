@@ -2,7 +2,7 @@ from fastapi import APIRouter, UploadFile, File, Form, HTTPException
 import shutil
 import os
 import re
-from app.services.generate_local_video_script import extract_audio_from_video, transcribe_audio, save_transcript
+from app.services.generate_local_video_script import extract_audio_from_video, transcribe_audio, save_transcript, logger
 
 router = APIRouter(prefix="/script", tags=["local_video"])
 
@@ -22,7 +22,7 @@ async def local_extract_script(
         with open(video_path, "wb") as buffer:
             shutil.copyfileobj(file.file, buffer)
 
-        print(f"📂 Video saved locally: {video_path}")
+        logger.info(f"📂 Video saved locally: {video_path}")
 
         # Step 2️⃣: Extract audio and transcribe
         audio_path = extract_audio_from_video(video_path)

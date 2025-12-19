@@ -14,10 +14,14 @@ No stretching.
 from __future__ import annotations
 
 from pathlib import Path
+from app.utils.file_cache import cache_file
 import subprocess
 import ffmpeg
 from pydub import AudioSegment
 from typing import Tuple
+import logging
+from app.utils.structured_logging import get_logger, log_message
+logger = get_logger("voice_to_video_merge", logging.DEBUG)
 
 # How close durations can be before we say "they're basically equal"
 DURATION_TOLERANCE = 0.10  # seconds (set small >0 to avoid tiny differences)
@@ -48,7 +52,7 @@ def get_duration(path: str | Path) -> float:
 # -------------------------------------------------------
 def trim_audio_to_duration(audio_path: Path, target_duration: float) -> Path:
     """Trim audio from end to target_duration. Writes <stem>_trimmed.wav"""
-    print(f"[STEP] Trimming audio to {target_duration:.2f}s")
+    logger.info(f"[STEP] Trimming audio to {target_duration:.2f}s")
 
     sound = AudioSegment.from_file(audio_path)
     target_ms = int(target_duration * 1000)
@@ -61,12 +65,12 @@ def trim_audio_to_duration(audio_path: Path, target_duration: float) -> Path:
     trimmed.export(trimmed_path, format="wav")
 
     dur_trimmed = get_duration(trimmed_path)
-    print(f"[INFO] Audio trimmed: {dur_trimmed:.2f}s -> {trimmed_path}")
+    logger.info(f"[INFO] Audio trimmed: {dur_trimmed:.2f}s -> {trimmed_path}")
     return trimmed_path
 
 def trim_video_to_duration(video_path: Path, target_duration: float) -> Path:
     """Trim video from end to target_duration. Writes <stem>_trimmed.mp4"""
-    print(f"[STEP] Trimming video to {target_duration:.2f}s")
+    logger.info(f"[STEP] Trimming video to {target_duration:.2f}s")
 
     trimmed_path = video_path.with_name(f"{video_path.stem}_trimmed.mp4")
 
@@ -84,18 +88,17 @@ def trim_video_to_duration(video_path: Path, target_duration: float) -> Path:
         str(trimmed_path),
     ]
 
-    print("\n[DEBUG] FFmpeg trim video command:")
-    print(" ".join(cmd), "\n")
+    logger.info("\n[DEBUG] FFmpeg trim video command:")
+    logger.info(" ".join(cmd), "\n")
 
     result = subprocess.run(cmd, capture_output=True, text=True)
     if result.returncode != 0:
-        print("[ERROR] FFmpeg stderr (trim video):\n", result.stderr)
+        logger.info("[ERROR] FFmpeg stderr (trim video):\n", result.stderr)
         raise RuntimeError("FFmpeg video trim failed.")
 
     dur_trimmed = get_duration(trimmed_path)
-    print(f"[INFO] Video trimmed: {dur_trimmed:.2f}s -> {trimmed_path}")
+    logger.info(f"[INFO] Video trimmed: {dur_trimmed:.2f}s -> {trimmed_path}")
     return trimmed_path
-
 
 # -------------------------------------------------------
 # Decide trimming based on cut_mode
@@ -123,15 +126,15 @@ def prepare_media_for_merge(
     dur_v = get_duration(video_path)
     dur_a = get_duration(audio_path)
 
-    print(f"[INFO] Original durations -> Video: {dur_v:.2f}s | Audio: {dur_a:.2f}s")
-    print(f"[INFO] cut_mode = {mode!r}")
+    logger.info(f"[INFO] Original durations -> Video: {dur_v:.2f}s | Audio: {dur_a:.2f}s")
+    logger.info(f"[INFO] cut_mode = {mode!r}")
 
     final_video = video_path
     final_audio = audio_path
 
     # If durations are close, don't bother cutting.
     if abs(dur_v - dur_a) <= DURATION_TOLERANCE:
-        print("[OK] Durations already close, no trimming needed.")
+        logger.info("[OK] Durations already close, no trimming needed.")
         return final_video, final_audio
 
     if mode in {"video", "cut_video"} and dur_v > dur_a:
@@ -141,7 +144,7 @@ def prepare_media_for_merge(
         final_audio = trim_audio_to_duration(audio_path, dur_v)
 
     else:
-        print("[INFO] No pre-trim applied (mode='none' or condition not met).")
+        logger.info("[INFO] No pre-trim applied (mode='none' or condition not met).")
 
     return final_video, final_audio
 
@@ -209,27 +212,28 @@ def merge_audio_video(
 
     cmd += [str(output_path)]
 
-    print("\n[DEBUG] FFmpeg merge command:")
-    print(" ".join(cmd), "\n")
+    logger.info("\n[DEBUG] FFmpeg merge command:")
+    logger.info(" ".join(cmd), "\n")
 
     result = subprocess.run(cmd, capture_output=True, text=True)
     if result.returncode != 0:
-        print("[ERROR] FFmpeg stderr (merge):\n", result.stderr)
+        logger.info("[ERROR] FFmpeg stderr (merge):\n", result.stderr)
         raise RuntimeError("FFmpeg merge failed.")
     else:
-        print("[OK] Merge completed successfully.")
-        print(f"[INFO] Output file: {output_path}")
+        logger.info("[OK] Merge completed successfully.")
+        logger.info(f"[INFO] Output file: {output_path}")
 
     dur_v = get_duration(video_path)
     dur_a = get_duration(audio_path)
     dur_out = get_duration(output_path)
-    print(f"[VERIFY] Video in: {dur_v:.2f}s | Audio in: {dur_a:.2f}s | Output: {dur_out:.2f}s")
+    logger.info(f"[VERIFY] Video in: {dur_v:.2f}s | Audio in: {dur_a:.2f}s | Output: {dur_out:.2f}s")
 
     return output_path
 
 # -------------------------------------------------------
 # Public function
 # -------------------------------------------------------
+@cache_file("output/cache", namespace="video", ext=".mp4", out_arg="out_path")
 def merge_voice_and_video(
     video_path: str | Path,
     audio_path: str | Path,
@@ -251,7 +255,7 @@ def merge_voice_and_video(
     output_root.mkdir(parents=True, exist_ok=True)
     output_path = output_root / f"{video_path.stem}_merged.mp4"
 
-    print("[STEP] Preparing media (optional cutting based on cut_mode)...")
+    logger.info("[STEP] Preparing media (optional cutting based on cut_mode)...")
     final_video, final_audio = prepare_media_for_merge(video_path, audio_path, cut_mode=cut_mode)
 
     # ✅ Recommendation:
@@ -259,7 +263,7 @@ def merge_voice_and_video(
     mode = (cut_mode or "none").lower().strip()
     keep_video_length = mode in {"none", "default"}
 
-    print(f"[STEP] Merging video and audio... (keep_video_length={keep_video_length})")
+    logger.info(f"[STEP] Merging video and audio... (keep_video_length={keep_video_length})")
     return merge_audio_video(
         final_video,
         final_audio,
@@ -285,4 +289,4 @@ if __name__ == "__main__":
     # ✅ Case 3 (recommended): keep video length, pad audio with silence
     merged = merge_voice_and_video(v, a, cut_mode="none")
 
-    print("[DONE] Merged file:", merged)
+    logger.info("[DONE] Merged file:", merged)

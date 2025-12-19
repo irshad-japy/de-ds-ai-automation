@@ -4,15 +4,20 @@ python -m app.services.merge_all_step_to_video
 
 from __future__ import annotations
 from pathlib import Path
-
+import logging
+from app.utils.file_cache import cache_file
 from app.services.voice_to_video_merge import merge_voice_and_video
 from app.services.merge_hooks_video import merge_hook_full_video
 from app.services.merge_thumbnail_video import add_image_invideo
 from app.services.add_bg_music_on_video import add_background_music
 from app.services.append_video_tail import append_video_to_end
 
+from app.utils.structured_logging import get_logger, log_message
+logger = get_logger("merge_all_step_to_video", logging.DEBUG)
+
 OUT_DIR = Path("output/merge_video")
 
+@cache_file("output/cache", namespace="video", ext=".mp4", out_arg="out_path")
 def merge_main(
     full_video_path: str | Path,
     full_audio_path: str | Path,
@@ -43,6 +48,9 @@ def merge_main(
 
     video_with_bg_music = add_background_music(merged_with_thumb, music_path)
     merged_final = append_video_to_end(video_with_bg_music, end_video)
+
+    logger.info(f'final full merge video {merged_final}')
+    
     return Path(merged_final)
 
 if __name__ == "__main__":
@@ -56,4 +64,4 @@ if __name__ == "__main__":
     music_path = "assets/audio/background-music-159125.mp3"
 
     out = merge_main(Full_video_path, Full_audio_path, cut_mode, hook_audio, hook_video, thumbnail_path, music_path)
-    print(f"✅ Saved: {out.resolve()}")
+    logger.info(f"✅ Saved: {out.resolve()}")

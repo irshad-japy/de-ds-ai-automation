@@ -6,14 +6,20 @@ python -m app.services.generate_voice
 
 import os
 import requests
+import logging
 from app.utils.config import settings
 from pathlib import Path
 from typing import Optional
+from app.utils.file_cache import cache_file
+
+from app.utils.structured_logging import get_logger, log_message
+logger = get_logger("generate_thumbnail", logging.DEBUG)
 
 def _ensure_parent_dir(path: Path) -> None:
     """Create parent directory for the given file path if needed."""
     path.parent.mkdir(parents=True, exist_ok=True)
 
+@cache_file("output/cache", namespace="audio", ext=".wav", out_arg="out_path")
 def generate_voice(text: str, speaker_id: str, out_path: str | Path, language: Optional[str] = 'en'):
     """Generate voice using ElevenLabs API for any text-based file."""
 
@@ -55,7 +61,7 @@ def generate_voice(text: str, speaker_id: str, out_path: str | Path, language: O
     with open(out_path, "wb") as out:
         out.write(response.content)
 
-    print(f"✅ Voice generated: {out_path}")
+    logger(f"✅ Voice generated: {out_path}")
     return out_path
 
 # ---------------------------------------------------------------

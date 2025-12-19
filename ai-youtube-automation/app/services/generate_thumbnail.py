@@ -14,7 +14,7 @@ import torch
 import logging
 from diffusers import StableDiffusionXLPipeline
 from PIL import Image, ImageDraw, ImageFont
-
+from app.utils.file_cache import cache_file
 from app.utils.structured_logging import get_logger, log_message
 
 logger = get_logger("generate_thumbnail", logging.DEBUG)
@@ -261,6 +261,7 @@ def build_prompts(topic: str) -> dict:
         "icon_prompt": icon_prompt,
     }
 
+@cache_file("output/cache", namespace="thumbs", ext=".png", out_arg="out_path")
 def generate_thumbnail_from_script(script: str, seed: int = 42) -> Path:
     """
     Single entry point: only script text in, thumbnail path out.

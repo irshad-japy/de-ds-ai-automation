@@ -1,10 +1,19 @@
+"""
+python -m app.services.merge_hooks_video
+"""
+
 from __future__ import annotations
 
 from pathlib import Path
+from app.utils.file_cache import cache_file
 import subprocess
 import tempfile
+import logging
+from pathlib import Path
+from app.utils.structured_logging import get_logger, log_message
+logger = get_logger("merge_hooks_video", logging.DEBUG)
 
-
+@cache_file("output/cache", namespace="video", ext=".mp4", out_arg="out_path")
 def merge_hook_full_video(hook_video: str | Path, full_video: str | Path) -> Path:
     """
     Prepend hook_video to full_video and return the final merged video path.
@@ -20,7 +29,7 @@ def merge_hook_full_video(hook_video: str | Path, full_video: str | Path) -> Pat
     if not full_video.exists():
         raise FileNotFoundError(f"Full video not found: {full_video}")
 
-    out_dir = full_video.parent / "output" / "merge_video"
+    out_dir = Path("output/merge_video")
     out_dir.mkdir(parents=True, exist_ok=True)
     out_path = out_dir / f"{full_video.stem}_with_hook.mp4"
 
@@ -58,4 +67,4 @@ if __name__ == "__main__":
         hook_video="output/hooks/hook_10s.mp4",
         full_video="output/merge_video/video_with_bg.mp4",
     )
-    print("Merged video:", merged)
+    logger.info("Merged video:", merged)

@@ -5,6 +5,9 @@ python ai-youtube-automation/app/services/generate_yt_video_script.py
 from youtube_transcript_api import YouTubeTranscriptApi, TranscriptsDisabled, NoTranscriptFound
 from fastapi import HTTPException
 import re, os, datetime
+import logging
+from app.utils.structured_logging import get_logger, log_message
+logger = get_logger("generate_yt_video_script", logging.DEBUG)
 
 # -------------------------------------------------------
 # 🔹 Extract YouTube Video ID
@@ -50,7 +53,7 @@ def fetch_and_save_transcript(url: str, languages=None):
         languages = ['de', 'en', 'hi']
 
     video_id = extract_video_id(url)
-    print(f"🔹 Fetching transcript for video_id={video_id} in {languages}")
+    logger.info(f"🔹 Fetching transcript for video_id={video_id} in {languages}")
 
     try:
         ytt_api = YouTubeTranscriptApi()
@@ -73,7 +76,7 @@ def fetch_and_save_transcript(url: str, languages=None):
     with open(file_path, "w", encoding="utf-8") as f:
         f.write(text + "\n")
     
-    print(f"✅ Transcript saved successfully: {file_path}")
+    logger.info(f"✅ Transcript saved successfully: {file_path}")
     return file_path
 
 # -------------------------------------------------------

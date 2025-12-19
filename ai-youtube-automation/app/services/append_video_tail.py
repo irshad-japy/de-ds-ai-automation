@@ -6,6 +6,7 @@ from __future__ import annotations
 import json
 import subprocess
 from pathlib import Path
+from app.utils.file_cache import cache_file
 
 out_dir = Path("output/merge_video")
 AUDIO_SR = 44100
@@ -59,6 +60,7 @@ def _get_video_props(meta: dict) -> tuple[int, int, float, bool, float]:
 
     return width, height, fps, has_audio, dur
 
+@cache_file("output/cache", namespace="video", ext=".mp4", out_arg="out_path")
 def append_video_to_end(full_video: str | Path, tail_video: str | Path) -> Path:
     full_video = Path(full_video)
     tail_video = Path(tail_video)

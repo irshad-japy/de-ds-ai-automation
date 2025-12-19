@@ -6,6 +6,11 @@ from __future__ import annotations
 import json
 import subprocess
 from pathlib import Path
+from app.utils.file_cache import cache_file
+import logging
+
+from app.utils.structured_logging import get_logger, log_message
+logger = get_logger("merge_thumbnail_video", logging.DEBUG)
 
 out_dir = Path("output/merge_video")
 
@@ -64,6 +69,7 @@ def _get_av_props(meta: dict) -> tuple[int, int, float, bool, int, str]:
 
     return width, height, fps, has_audio, sr, layout
 
+@cache_file("output/cache", namespace="video", ext=".mp4", out_arg="out_path")
 def add_image_invideo(video_path: str | Path, image_path: str | Path, intro_second=0.01) -> Path:
     video_path = Path(video_path)
     image_path = Path(image_path)
@@ -161,4 +167,4 @@ if __name__ == "__main__":
     disclaimer_path = "assets/image/demo_disclaimer.png"
 
     out = add_image_invideo(video_path, disclaimer_path)
-    print(f"✅ Saved: {out.resolve()}")
+    logger.info(f"✅ Saved: {out.resolve()}")

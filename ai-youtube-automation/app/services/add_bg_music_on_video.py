@@ -6,6 +6,7 @@ from __future__ import annotations
 import json
 import subprocess
 from pathlib import Path
+from app.utils.file_cache import cache_file
 import os
 
 def ffprobe_duration_seconds(media_path: Path) -> float:
@@ -31,6 +32,7 @@ def video_has_audio_stream(video_path: Path) -> bool:
     data = json.loads(p.stdout)
     return bool(data.get("streams"))
 
+@cache_file("output/cache", namespace="video", ext=".mp4", out_arg="out_path")
 def add_background_music(video_path: str | Path, music_path: str | Path) -> Path:
     """
     Mix looping background music under existing video audio.

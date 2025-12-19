@@ -9,7 +9,11 @@ import datetime
 import subprocess
 from pathlib import Path
 import whisper
+import logging
 
+from app.utils.structured_logging import get_logger, log_message
+
+logger = get_logger("generate_local_video_script", logging.DEBUG)
 
 # -------------------------------------------------------
 # 🔹 Step 1: Extract Audio (FFmpeg) -> mono 16k wav
@@ -49,10 +53,10 @@ def extract_audio_from_video(
         cmd += ["-af", af_str]
     cmd += [audio_path]
 
-    print(f"🎬 Extracting audio via ffmpeg...\n➡️  {video_path}\n➡️  {audio_path}")
+    logger.info(f"🎬 Extracting audio via ffmpeg...\n➡️  {video_path}\n➡️  {audio_path}")
     subprocess.run(cmd, check=True, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
 
-    print(f"✅ Audio saved at: {audio_path}")
+    logger.info(f"✅ Audio saved at: {audio_path}")
     return audio_path
 
 
@@ -68,10 +72,10 @@ def transcribe_audio(
     """
     Returns Whisper segments (list of dicts).
     """
-    print(f"🧠 Loading Whisper model '{model_name}' ...")
+    logger.info(f"🧠 Loading Whisper model '{model_name}' ...")
     model = whisper.load_model(model_name)
 
-    print(f"🎧 Transcribing audio...\n➡️  {audio_path}")
+    logger.info(f"🎧 Transcribing audio...\n➡️  {audio_path}")
     result = model.transcribe(
         audio_path,
         language=language,
@@ -93,7 +97,7 @@ def transcribe_audio(
     )
 
     segments = result.get("segments", [])
-    print(f"✅ Transcription completed. {len(segments)} segments extracted.")
+    logger.info(f"✅ Transcription completed. {len(segments)} segments extracted.")
     return segments
 
 # -------------------------------------------------------
@@ -159,7 +163,7 @@ def save_transcript(text: str, video_path: str, output_dir: str = "output") -> s
     with open(file_path, "w", encoding="utf-8") as f:
         f.write(text + "\n")
 
-    print(f"✅ Transcript saved to: {file_path}")
+    logger.info(f"✅ Transcript saved to: {file_path}")
     return file_path
 
 # -------------------------------------------------------
@@ -174,11 +178,11 @@ def process_local_video(
     audio_path = extract_audio_from_video(video_path)
     segments = transcribe_audio(audio_path, model_name=model_name, language=language, task=task)
 
-    # Debug tip: print first few segments to verify Whisper output BEFORE merging
-    print("\n--- DEBUG: First 5 raw segments ---")
+    # Debug tip: logger.info first few segments to verify Whisper output BEFORE merging
+    logger.info("\n--- DEBUG: First 5 raw segments ---")
     for s in segments[:5]:
-        print(f"[{s.get('start'):.2f}-{s.get('end'):.2f}] {s.get('text','').strip()} (no_speech={s.get('no_speech_prob',0):.2f})")
-    print("--- END DEBUG ---\n")
+        logger.info(f"[{s.get('start'):.2f}-{s.get('end'):.2f}] {s.get('text','').strip()} (no_speech={s.get('no_speech_prob',0):.2f})")
+    logger.info("--- END DEBUG ---\n")
 
     cleaned_text = merge_transcript_segments(segments)
     return save_transcript(cleaned_text, video_path)
