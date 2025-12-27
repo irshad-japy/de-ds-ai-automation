@@ -69,7 +69,7 @@ def main():
 
     payload = build_payload(args)
     try:
-        res = rqeuests.post(API_URL, json=payload, timeout=180)
+        res = requests.post(API_URL, json=payload, timeout=180)
     except Exception as e:
         print(f"[ERROR] Could not reach {API_URL}: {e}")
         print("Make sure your FastAPI is running. Example:\n  uvicorn app:app --host 0.0.0.0 --port 8099")
