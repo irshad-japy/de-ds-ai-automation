@@ -40,7 +40,7 @@ def add_background_music(video_path: str | Path, music_path: str | Path) -> Path
     Output:
       <project_root>/output/final_video/<video_stem>_bg_video<ext>
     """
-    music_volume = 0.15
+    music_volume = 0.2
     audio_bitrate = "192k"
 
     video_path = Path(video_path)
@@ -100,6 +100,6 @@ def add_background_music(video_path: str | Path, music_path: str | Path) -> Path
 
 if __name__ == "__main__":
     video = r"assets/video/demo_video.mp4"
-    music = r"assets/audio/background-music-159125.mp3"
+    music = r"assets/audio/bg_lofi_01_adjusted.wav"
     result = add_background_music(video, music)
     print("Saved:", result)

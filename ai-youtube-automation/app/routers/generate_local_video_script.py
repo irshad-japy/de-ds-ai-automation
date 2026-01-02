@@ -20,7 +20,7 @@ async def local_extract_script(
         os.makedirs("temp_videos", exist_ok=True)
         video_path = os.path.join("temp_videos", file.filename)
         with open(video_path, "wb") as buffer:
-            shutil.copyfileobj(file.file, buffer)
+            shutil.copyfileobj(file.file, buffer)   
 
         logger.info(f"📂 Video saved locally: {video_path}")
 
@@ -44,3 +44,4 @@ async def local_extract_script(
             os.remove(video_path)
         if os.path.exists("temp_videos") and not os.listdir("temp_videos"):
             os.rmdir("temp_videos")
+            

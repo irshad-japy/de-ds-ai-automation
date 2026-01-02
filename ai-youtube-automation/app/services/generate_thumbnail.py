@@ -5,7 +5,7 @@ python -m app.services.generate_thumbnail
 import datetime as dt
 import hashlib
 import json
-import re
+import re, os
 import time
 from io import BytesIO
 from pathlib import Path
@@ -148,39 +148,6 @@ def resize_to_1280x720(img: Image.Image) -> Image.Image:
     img = center_crop_to_aspect(img, 16, 9)
     return img.resize((1280, 720), Image.LANCZOS)
 
-def to_transparent_png(img: Image.Image) -> Image.Image:
-    """Remove background using rembg, returning RGBA image."""
-    rgba = img.convert("RGBA")
-
-    if rembg_remove is None:
-        return rgba
-
-    # Encode to PNG bytes -> rembg -> decode
-    buf = BytesIO()
-    rgba.save(buf, format="PNG")
-    in_bytes = buf.getvalue()
-
-    out_bytes = rembg_remove(in_bytes)  # returns PNG bytes
-    return Image.open(BytesIO(out_bytes)).convert("RGBA")
-
-def paste_centered(base: Image.Image, overlay: Image.Image, box: tuple[int, int, int, int]) -> Image.Image:
-    base_rgba = base.convert("RGBA")
-    overlay_rgba = overlay.convert("RGBA")
-
-    x0, y0, x1, y1 = box
-    bw, bh = (x1 - x0), (y1 - y0)
-
-    ow, oh = overlay_rgba.size
-    scale = min(bw / ow, bh / oh)
-    nw, nh = int(ow * scale), int(oh * scale)
-    overlay_rgba = overlay_rgba.resize((nw, nh), Image.LANCZOS)
-
-    px = x0 + (bw - nw) // 2
-    py = y0 + (bh - nh) // 2
-
-    base_rgba.paste(overlay_rgba, (px, py), overlay_rgba)
-    return base_rgba.convert("RGB")
-
 def draw_big_text(base: Image.Image, text: str, font_path: Path) -> Image.Image:
     img = base.convert("RGBA")
     d = ImageDraw.Draw(img)
@@ -236,72 +203,181 @@ def draw_big_text(base: Image.Image, text: str, font_path: Path) -> Image.Image:
 
     return img.convert("RGB")
 
-def build_prompts(topic: str) -> dict:
+KEYWORD_VISUALS = {
+    "n8n": "a flat icon of connected workflow nodes (3-5 circles with lines), automation symbol",
+    "youtube": "a simple red play button inside a rounded rectangle, flat icon style",
+    "database": "a database cylinder icon, flat design",
+    "sql": "a database cylinder with small query brackets, flat icon",
+    "postgres": "a database cylinder icon, flat design",
+    "mysql": "a database cylinder icon, flat design",
+    "redis": "a stacked cache blocks icon, flat design",
+    "fastapi": "a minimal API endpoint icon (brackets + lightning), flat design",
+    "api": "a minimal API endpoint icon (brackets), flat design",
+    "aws": "a cloud icon with small nodes, flat design",
+    "lambda": "a minimal serverless lightning icon, flat design",
+    "docker": "a container box icon, flat design",
+    "kubernetes": "a cluster nodes hexagon-like symbol, flat design",
+    "qdrant": "a vector dots cluster icon, flat design",
+    "vector": "a vector dots cluster icon, flat design",
+    "rag": "a magnifier over documents icon, flat design",
+    "ai": "a brain/circuit icon, flat design",
+    "agent": "a robot head icon, flat design",
+}
+
+def extract_visual_concepts(script: str, max_items: int = 3) -> list[str]:
+    """
+    Find relevant concepts in the script and return up to max_items visual concepts.
+    """
+    text = script.lower()
+
+    found = []
+    # Prefer important keywords first (stable ordering)
+    for key in KEYWORD_VISUALS.keys():
+        if re.search(rf"\b{re.escape(key)}\b", text):
+            found.append(KEYWORD_VISUALS[key])
+
+    # Fallback: always include something meaningful
+    if not found:
+        found = [
+            "a flat icon of connected workflow nodes, automation symbol",
+            "a simple red play button icon, flat design",
+        ]
+
+    # De-dup while preserving order
+    uniq = []
+    for x in found:
+        if x not in uniq:
+            uniq.append(x)
+
+    return uniq[:max_items]
+
+ICON_LIBRARY = {
+    "n8n": Path("assets/icons/n8n.png"),
+    "youtube": Path("assets/icons/youtube.png"),
+    "database": Path("assets/icons/database.png"),
+    "sql": Path("assets/icons/database.png"),
+    "postgres": Path("assets/icons/database.png"),
+    "mysql": Path("assets/icons/database.png"),
+    "redis": Path("assets/icons/redis.png"),
+    "fastapi": Path("assets/icons/api.png"),
+    "api": Path("assets/icons/api.png"),
+    "aws": Path("assets/icons/aws.png"),
+    "lambda": Path("assets/icons/lambda.png"),
+}
+
+def extract_icon_keys(script: str, max_icons: int = 2) -> list[str]:
+    text = script.lower()
+    keys = []
+    for k in ICON_LIBRARY.keys():
+        if re.search(rf"\b{re.escape(k)}\b", text):
+            keys.append(k)
+
+    # de-dup preserve order
+    out = []
+    for k in keys:
+        if k not in out:
+            out.append(k)
+
+    return out[:max_icons]
+
+def load_icon(key: str) -> Image.Image:
+    p = ICON_LIBRARY.get(key)
+    if not p or not p.exists():
+        raise FileNotFoundError(f"Icon missing for '{key}': {p}")
+    return Image.open(p).convert("RGBA")
+
+def paste_icons_row(base: Image.Image, icons: list[Image.Image], box: tuple[int,int,int,int], gap: int = 12) -> Image.Image:
+    """
+    Paste 1..N icons in a row inside given box (x0,y0,x1,y1).
+    """
+    base_rgba = base.convert("RGBA")
+    x0, y0, x1, y1 = box
+    bw, bh = (x1 - x0), (y1 - y0)
+
+    n = max(1, len(icons))
+    slot_w = (bw - gap * (n - 1)) // n
+
+    for i, icon in enumerate(icons):
+        # fit icon into its slot
+        ow, oh = icon.size
+        scale = min(slot_w / ow, bh / oh)
+        nw, nh = int(ow * scale), int(oh * scale)
+        icon_r = icon.resize((nw, nh), Image.LANCZOS)
+
+        sx0 = x0 + i * (slot_w + gap)
+        px = sx0 + (slot_w - nw) // 2
+        py = y0 + (bh - nh) // 2
+
+        base_rgba.paste(icon_r, (px, py), icon_r)
+
+    return base_rgba.convert("RGB")
+
+def build_prompts(topic: str, script: str) -> dict:
+    concepts = extract_visual_concepts(script, max_items=3)
+
     background_prompt = (
         f"Professional YouTube thumbnail background for: {topic}. "
+        f"Include subtle elements of: {', '.join(concepts[:2])}. "
         "Clean, modern, high-contrast, minimal clutter, tech automation theme. "
         "Abstract workflow nodes and connectors, subtle glowing UI shapes. "
-        "Composition: left side has visual interest, right side is clean empty space for text. "
-        "No words, no watermark, no brand logos, sharp, cinematic lighting."
+        "Left side visual interest, right side clean empty space for text. "
+        "No words, no watermark, no brand logos."
     )
 
-    subject_prompt = (
-        "A friendly 3D robot character, confident pose, clean WHITE background, "
-        "studio lighting, ultra sharp, high quality, no text, no watermark."
-    )
-
+    # Icon becomes a SINGLE combined icon tile, based on script
     icon_prompt = (
-        "A simple red play-button icon, flat design, clean WHITE background, "
-        "high contrast, no text, no watermark."
+        "A clean flat icon tile on WHITE background featuring: "
+        + ", ".join(concepts[:2]) +
+        ". Minimal, high contrast, vector style, no text, no watermark."
     )
 
     return {
         "background_prompt": background_prompt,
-        "subject_prompt": subject_prompt,
         "icon_prompt": icon_prompt,
     }
 
 @cache_file("output/cache", namespace="thumbs", ext=".png", out_arg="out_path")
-def generate_thumbnail_from_script(script: str, seed: int = 42) -> Path:
-    """
-    Single entry point: only script text in, thumbnail path out.
-    """
-    ensure_dirs()
+def generate_thumbnail_from_script(script: str, seed: int | None = None) -> Path:
+    ensure_dirs() 
     font_path = ensure_font()
+
+    # ✅ NEW: random seed if not provided
+    if seed is None:
+        seed = int.from_bytes(os.urandom(4), "big")
 
     topic = extract_title_or_topic(script)
     headline = make_headline(topic)
-    prompts = build_prompts(topic)
+    prompts = build_prompts(topic, script)
 
     pipe = sdxl_pipe(MODEL_ID)
 
     bg = gen_image(pipe, prompts["background_prompt"], NEGATIVE_PROMPT, BG_SIZE, seed=seed + 10)
-    subject = gen_image(pipe, prompts["subject_prompt"], NEGATIVE_PROMPT, SUBJECT_SIZE, seed=seed + 20)
-    icon = gen_image(pipe, prompts["icon_prompt"], NEGATIVE_PROMPT, ICON_SIZE, seed=seed + 30)
 
     bg = resize_to_1280x720(bg)
 
-    subject_rgba = to_transparent_png(subject)
-    icon_rgba = to_transparent_png(icon)
+    icon_keys = extract_icon_keys(script, max_icons=2)  # pick 1-2 icons from script
+    if not icon_keys:
+        icon_keys = ["youtube"]  # or "n8n" or your brand default
+    icons = [load_icon(k) for k in icon_keys]
 
-    bg = paste_centered(bg, subject_rgba, box=(20, 80, 610, 700))
-    bg = paste_centered(bg, icon_rgba, box=(1080, 40, 1240, 200))
+    # paste 1 or 2 icons in the top-right box
+    bg = paste_icons_row(bg, icons, box=(1060, 40, 1250, 200))
 
     final_img = draw_big_text(bg, headline, font_path)
 
-    ts = dt.datetime.now().strftime("%Y%m%d_%H%M%S")
     script_id = hashlib.md5(script.encode("utf-8", errors="ignore")).hexdigest()[:8]
-
-    out_path = OUT_DIR / f"thumb_{ts}_{script_id}.png"
+    out_path = OUT_DIR / f"thumb_{script_id}_seed_{seed}.png"
     final_img.save(out_path)
 
     return out_path
 
 # # Example local run
-# if __name__ == "__main__":
-#     start = time.time()
-#     demo_script = "Have you ever wanted to give an AI agent access to your own private research documents without uploading everything to the cloud or paying huge API fees? Imagine typing a question into Claude Desktop, but instead of just relying on its training data, it instantly pulls answers from your local database running on your own machine. That is exactly what we are building today. We are going to create a custom Model Context Protocol, or MCP server, using FastAPI, connect it to a local Qdrant vector database, and power the whole thing with Ollama. This is a massive step forward for anyone interested in deep research automation and local AI privacy. Welcome back to Qubot AI Automation. If you are a busy creator or developer looking to streamline your workflow, you are in the right place. Today, we are tackling a Proof of Concept that connects several powerful tools. We are moving beyond simple scripts and building a robust architecture that acts as the brain for your automation projects. I know a lot of you have been hearing about MCP servers recently. It feels like the new standard for connecting AI tools, and frankly, it is. But the documentation can be a bit heavy. So, I spent the last few days banging my head against the wall to figure out the simplest way to get this running, so you don't have to. Let's start with the Why. Why build this specific stack? We have FastAPI as our backbone. It is fast, lightweight, and perfect for building the endpoints that the MCP protocol needs. Then we have Ollama. This allows us to run models like Llama 3 or Mistral locally. This is crucial for embedding our data—transforming text into numbers that the computer understands—without paying OpenAI for embeddings. Finally, we use Qdrant. Qdrant is a fantastic vector search engine. It stores those embeddings and lets us find relevant information in milliseconds. By combining these, you get a research agent that lives entirely on your laptop Here is the first hurdle I faced during this research. When you look at the MCP documentation, most examples use standard input and output, or stdio. That works great for simple command-line tools. But if you want to integrate this with n8n later, or if you want to debug what is actually happening, running an HTTP server with Server-Sent Events, or SSE, is much better. So, that is the route we are taking today. We are building an SSE-based MCP server"
-#     out_path = generate_thumbnail_from_script(demo_script, seed=42)
-#     logger.info(f"✅ Saved: {out_path}")
-#     end = time.time()
-#     logger.info(f'total to to execute {end-start} second')
+if __name__ == "__main__":
+    start = time.time()
+    demo_script = """Learn how to build a dynamic ETL pipeline v PySpark and a Docker-based MySQL databa This POC shows how to create a metadata-driven job runner that executes ETL tasks (CSV or SQL source) based on control table entries. We cover Spark setup, environment variables, JDBC integration, and error fixes.\n\n🔧 Tech stack: PySpark, MySQL, Docker, SQLAlchemy, Pandas\n💡 Use case: Automate ETL jobs dynamically using metadata
+        """
+    out_path = generate_thumbnail_from_script(demo_script)
+    logger.info(f"✅ Saved: {out_path}")
+    end = time.time()
+    logger.info(f'total time to execute {end-start} second')
+    
