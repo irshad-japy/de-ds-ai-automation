@@ -1,0 +1,4 @@
+document_id,receipt_format_id,field_name,expected_value,mandatory
+sample-001,FORMAT_A,total,123.45,true
+sample-001,FORMAT_A,date,2026-09-03,true
+sample-001,FORMAT_A,reference_number,ABC123,true

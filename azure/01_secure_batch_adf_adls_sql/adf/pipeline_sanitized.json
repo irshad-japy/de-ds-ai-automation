@@ -1,0 +1,764 @@
+{
+  "name": "PL_INGEST_ORDERS_BATCH",
+  "properties": {
+    "description": "POC-01 secure parameterized batch ingestion. Sanitized: contains no credentials.",
+    "parameters": {
+      "p_container": {
+        "type": "string",
+        "defaultValue": "landing"
+      },
+      "p_folder": {
+        "type": "string",
+        "defaultValue": "orders/2026/08/28"
+      },
+      "p_file": {
+        "type": "string",
+        "defaultValue": "orders_001.csv"
+      },
+      "p_target_table": {
+        "type": "string",
+        "defaultValue": "orders_stg"
+      }
+    },
+    "activities": [
+      {
+        "name": "Get_Metadata_File",
+        "type": "GetMetadata",
+        "dependsOn": [],
+        "policy": {
+          "timeout": "0.12:00:00",
+          "retry": 1,
+          "retryIntervalInSeconds": 30,
+          "secureOutput": false,
+          "secureInput": false
+        },
+        "typeProperties": {
+          "dataset": {
+            "referenceName": "DS_ADLS_OrdersCsv",
+            "type": "DatasetReference",
+            "parameters": {
+              "p_container": {
+                "value": "@pipeline().parameters.p_container",
+                "type": "Expression"
+              },
+              "p_folder": {
+                "value": "@pipeline().parameters.p_folder",
+                "type": "Expression"
+              },
+              "p_file": {
+                "value": "@pipeline().parameters.p_file",
+                "type": "Expression"
+              }
+            }
+          },
+          "fieldList": [
+            "exists",
+            "size",
+            "lastModified"
+          ]
+        }
+      },
+      {
+        "name": "If_File_Exists",
+        "type": "IfCondition",
+        "dependsOn": [
+          {
+            "activity": "Get_Metadata_File",
+            "dependencyConditions": [
+              "Succeeded"
+            ]
+          }
+        ],
+        "typeProperties": {
+          "expression": {
+            "value": "@activity('Get_Metadata_File').output.exists",
+            "type": "Expression"
+          },
+          "ifTrueActivities": [
+            {
+              "name": "Lookup_Already_Processed",
+              "type": "Lookup",
+              "dependsOn": [],
+              "policy": {
+                "timeout": "0.12:00:00",
+                "retry": 1,
+                "retryIntervalInSeconds": 30,
+                "secureOutput": false,
+                "secureInput": false
+              },
+              "typeProperties": {
+                "source": {
+                  "type": "AzureSqlSource",
+                  "sqlReaderQuery": {
+                    "value": "@concat('SELECT COUNT(*) AS processed_count FROM dbo.etl_file_log WHERE source_file = ''', pipeline().parameters.p_container, '/', pipeline().parameters.p_folder, '/', pipeline().parameters.p_file, ''' AND status = ''SUCCEEDED''')",
+                    "type": "Expression"
+                  },
+                  "queryTimeout": "02:00:00",
+                  "partitionOption": "None"
+                },
+                "dataset": {
+                  "referenceName": "DS_SQL_Table",
+                  "type": "DatasetReference",
+                  "parameters": {
+                    "p_target_table": "etl_file_log"
+                  }
+                },
+                "firstRowOnly": true
+              }
+            },
+            {
+              "name": "If_Not_Processed",
+              "type": "IfCondition",
+              "dependsOn": [
+                {
+                  "activity": "Lookup_Already_Processed",
+                  "dependencyConditions": [
+                    "Succeeded"
+                  ]
+                }
+              ],
+              "typeProperties": {
+                "expression": {
+                  "value": "@equals(int(activity('Lookup_Already_Processed').output.firstRow.processed_count), 0)",
+                  "type": "Expression"
+                },
+                "ifTrueActivities": [
+                  {
+                    "name": "Copy_CSV_To_Staging",
+                    "type": "Copy",
+                    "dependsOn": [],
+                    "policy": {
+                      "timeout": "0.12:00:00",
+                      "retry": 1,
+                      "retryIntervalInSeconds": 30,
+                      "secureOutput": false,
+                      "secureInput": false
+                    },
+                    "typeProperties": {
+                      "source": {
+                        "type": "DelimitedTextSource",
+                        "additionalColumns": [
+                          {
+                            "name": "source_file",
+                            "value": {
+                              "value": "@concat(pipeline().parameters.p_container, '/', pipeline().parameters.p_folder, '/', pipeline().parameters.p_file)",
+                              "type": "Expression"
+                            }
+                          },
+                          {
+                            "name": "pipeline_run_id",
+                            "value": {
+                              "value": "@pipeline().RunId",
+                              "type": "Expression"
+                            }
+                          }
+                        ],
+                        "storeSettings": {
+                          "type": "AzureBlobFSReadSettings",
+                          "recursive": false,
+                          "enablePartitionDiscovery": false
+                        },
+                        "formatSettings": {
+                          "type": "DelimitedTextReadSettings"
+                        }
+                      },
+                      "sink": {
+                        "type": "AzureSqlSink",
+                        "writeBehavior": "insert",
+                        "sqlWriterUseTableLock": false,
+                        "disableMetricsCollection": false
+                      },
+                      "enableSkipIncompatibleRow": true,
+                      "redirectIncompatibleRowSettings": {
+                        "linkedServiceName": {
+                          "referenceName": "LS_ADLS_GEN2_MI",
+                          "type": "LinkedServiceReference"
+                        },
+                        "path": {
+                          "value": "@concat('quarantine/adf-incompatible/', pipeline().RunId)",
+                          "type": "Expression"
+                        }
+                      },
+                      "translator": {
+                        "type": "TabularTranslator",
+                        "mappings": [
+                          {
+                            "source": {
+                              "name": "order_id",
+                              "type": "String"
+                            },
+                            "sink": {
+                              "name": "order_id",
+                              "type": "Int64"
+                            }
+                          },
+                          {
+                            "source": {
+                              "name": "customer_id",
+                              "type": "String"
+                            },
+                            "sink": {
+                              "name": "customer_id",
+                              "type": "Int64"
+                            }
+                          },
+                          {
+                            "source": {
+                              "name": "order_ts",
+                              "type": "String"
+                            },
+                            "sink": {
+                              "name": "order_ts",
+                              "type": "DateTime"
+                            }
+                          },
+                          {
+                            "source": {
+                              "name": "product_id",
+                              "type": "String"
+                            },
+                            "sink": {
+                              "name": "product_id",
+                              "type": "Int64"
+                            }
+                          },
+                          {
+                            "source": {
+                              "name": "quantity",
+                              "type": "String"
+                            },
+                            "sink": {
+                              "name": "quantity",
+                              "type": "Int32"
+                            }
+                          },
+                          {
+                            "source": {
+                              "name": "unit_price",
+                              "type": "String"
+                            },
+                            "sink": {
+                              "name": "unit_price",
+                              "type": "Decimal"
+                            }
+                          },
+                          {
+                            "source": {
+                              "name": "status",
+                              "type": "String"
+                            },
+                            "sink": {
+                              "name": "status",
+                              "type": "String"
+                            }
+                          },
+                          {
+                            "source": {
+                              "name": "source_file",
+                              "type": "String"
+                            },
+                            "sink": {
+                              "name": "source_file",
+                              "type": "String"
+                            }
+                          },
+                          {
+                            "source": {
+                              "name": "pipeline_run_id",
+                              "type": "String"
+                            },
+                            "sink": {
+                              "name": "pipeline_run_id",
+                              "type": "String"
+                            }
+                          }
+                        ],
+                        "typeConversion": true,
+                        "typeConversionSettings": {
+                          "allowDataTruncation": false,
+                          "treatBooleanAsNumber": false
+                        }
+                      }
+                    },
+                    "inputs": [
+                      {
+                        "referenceName": "DS_ADLS_OrdersCsv",
+                        "type": "DatasetReference",
+                        "parameters": {
+                          "p_container": {
+                            "value": "@pipeline().parameters.p_container",
+                            "type": "Expression"
+                          },
+                          "p_folder": {
+                            "value": "@pipeline().parameters.p_folder",
+                            "type": "Expression"
+                          },
+                          "p_file": {
+                            "value": "@pipeline().parameters.p_file",
+                            "type": "Expression"
+                          }
+                        }
+                      }
+                    ],
+                    "outputs": [
+                      {
+                        "referenceName": "DS_SQL_Table",
+                        "type": "DatasetReference",
+                        "parameters": {
+                          "p_target_table": {
+                            "value": "@pipeline().parameters.p_target_table",
+                            "type": "Expression"
+                          }
+                        }
+                      }
+                    ]
+                  },
+                  {
+                    "name": "SP_Validate_Merge",
+                    "type": "SqlServerStoredProcedure",
+                    "dependsOn": [
+                      {
+                        "activity": "Copy_CSV_To_Staging",
+                        "dependencyConditions": [
+                          "Succeeded"
+                        ]
+                      }
+                    ],
+                    "policy": {
+                      "timeout": "0.12:00:00",
+                      "retry": 1,
+                      "retryIntervalInSeconds": 30,
+                      "secureOutput": false,
+                      "secureInput": false
+                    },
+                    "linkedServiceName": {
+                      "referenceName": "LS_AZURE_SQL_MI",
+                      "type": "LinkedServiceReference"
+                    },
+                    "typeProperties": {
+                      "storedProcedureName": "dbo.usp_merge_orders",
+                      "storedProcedureParameters": {
+                        "pipeline_name": {
+                          "value": {
+                            "value": "@pipeline().Pipeline",
+                            "type": "Expression"
+                          },
+                          "type": "String"
+                        },
+                        "source_file": {
+                          "value": {
+                            "value": "@concat(pipeline().parameters.p_container, '/', pipeline().parameters.p_folder, '/', pipeline().parameters.p_file)",
+                            "type": "Expression"
+                          },
+                          "type": "String"
+                        },
+                        "run_id": {
+                          "value": {
+                            "value": "@pipeline().RunId",
+                            "type": "Expression"
+                          },
+                          "type": "String"
+                        }
+                      }
+                    }
+                  },
+                  {
+                    "name": "Copy_Landing_To_Archive",
+                    "type": "Copy",
+                    "dependsOn": [
+                      {
+                        "activity": "SP_Validate_Merge",
+                        "dependencyConditions": [
+                          "Succeeded"
+                        ]
+                      }
+                    ],
+                    "policy": {
+                      "timeout": "0.12:00:00",
+                      "retry": 1,
+                      "retryIntervalInSeconds": 30,
+                      "secureOutput": false,
+                      "secureInput": false
+                    },
+                    "typeProperties": {
+                      "source": {
+                        "type": "BinarySource",
+                        "storeSettings": {
+                          "type": "AzureBlobFSReadSettings",
+                          "recursive": false
+                        },
+                        "formatSettings": {
+                          "type": "BinaryReadSettings"
+                        }
+                      },
+                      "sink": {
+                        "type": "BinarySink",
+                        "storeSettings": {
+                          "type": "AzureBlobFSWriteSettings"
+                        }
+                      }
+                    },
+                    "inputs": [
+                      {
+                        "referenceName": "DS_ADLS_Binary",
+                        "type": "DatasetReference",
+                        "parameters": {
+                          "p_container": {
+                            "value": "@pipeline().parameters.p_container",
+                            "type": "Expression"
+                          },
+                          "p_folder": {
+                            "value": "@pipeline().parameters.p_folder",
+                            "type": "Expression"
+                          },
+                          "p_file": {
+                            "value": "@pipeline().parameters.p_file",
+                            "type": "Expression"
+                          }
+                        }
+                      }
+                    ],
+                    "outputs": [
+                      {
+                        "referenceName": "DS_ADLS_Binary",
+                        "type": "DatasetReference",
+                        "parameters": {
+                          "p_container": "archive",
+                          "p_folder": {
+                            "value": "@pipeline().parameters.p_folder",
+                            "type": "Expression"
+                          },
+                          "p_file": {
+                            "value": "@pipeline().parameters.p_file",
+                            "type": "Expression"
+                          }
+                        }
+                      }
+                    ]
+                  },
+                  {
+                    "name": "Delete_Landing_File",
+                    "type": "Delete",
+                    "dependsOn": [
+                      {
+                        "activity": "Copy_Landing_To_Archive",
+                        "dependencyConditions": [
+                          "Succeeded"
+                        ]
+                      }
+                    ],
+                    "policy": {
+                      "timeout": "0.12:00:00",
+                      "retry": 1,
+                      "retryIntervalInSeconds": 30,
+                      "secureOutput": false,
+                      "secureInput": false
+                    },
+                    "typeProperties": {
+                      "dataset": {
+                        "referenceName": "DS_ADLS_Binary",
+                        "type": "DatasetReference",
+                        "parameters": {
+                          "p_container": {
+                            "value": "@pipeline().parameters.p_container",
+                            "type": "Expression"
+                          },
+                          "p_folder": {
+                            "value": "@pipeline().parameters.p_folder",
+                            "type": "Expression"
+                          },
+                          "p_file": {
+                            "value": "@pipeline().parameters.p_file",
+                            "type": "Expression"
+                          }
+                        }
+                      },
+                      "enableLogging": false,
+                      "storeSettings": {
+                        "type": "AzureBlobFSReadSettings",
+                        "recursive": false
+                      }
+                    }
+                  },
+                  {
+                    "name": "Quarantine_On_Copy_Failure",
+                    "type": "Copy",
+                    "dependsOn": [
+                      {
+                        "activity": "Copy_CSV_To_Staging",
+                        "dependencyConditions": [
+                          "Failed"
+                        ]
+                      }
+                    ],
+                    "typeProperties": {
+                      "source": {
+                        "type": "BinarySource",
+                        "storeSettings": {
+                          "type": "AzureBlobFSReadSettings",
+                          "recursive": false
+                        },
+                        "formatSettings": {
+                          "type": "BinaryReadSettings"
+                        }
+                      },
+                      "sink": {
+                        "type": "BinarySink",
+                        "storeSettings": {
+                          "type": "AzureBlobFSWriteSettings"
+                        }
+                      }
+                    },
+                    "inputs": [
+                      {
+                        "referenceName": "DS_ADLS_Binary",
+                        "type": "DatasetReference",
+                        "parameters": {
+                          "p_container": {
+                            "value": "@pipeline().parameters.p_container",
+                            "type": "Expression"
+                          },
+                          "p_folder": {
+                            "value": "@pipeline().parameters.p_folder",
+                            "type": "Expression"
+                          },
+                          "p_file": {
+                            "value": "@pipeline().parameters.p_file",
+                            "type": "Expression"
+                          }
+                        }
+                      }
+                    ],
+                    "outputs": [
+                      {
+                        "referenceName": "DS_ADLS_Binary",
+                        "type": "DatasetReference",
+                        "parameters": {
+                          "p_container": "quarantine",
+                          "p_folder": {
+                            "value": "@concat('pipeline-failures/', pipeline().RunId, '/', pipeline().parameters.p_folder)",
+                            "type": "Expression"
+                          },
+                          "p_file": {
+                            "value": "@pipeline().parameters.p_file",
+                            "type": "Expression"
+                          }
+                        }
+                      }
+                    ]
+                  },
+                  {
+                    "name": "Quarantine_On_Merge_Failure",
+                    "type": "Copy",
+                    "dependsOn": [
+                      {
+                        "activity": "SP_Validate_Merge",
+                        "dependencyConditions": [
+                          "Failed"
+                        ]
+                      }
+                    ],
+                    "typeProperties": {
+                      "source": {
+                        "type": "BinarySource",
+                        "storeSettings": {
+                          "type": "AzureBlobFSReadSettings",
+                          "recursive": false
+                        },
+                        "formatSettings": {
+                          "type": "BinaryReadSettings"
+                        }
+                      },
+                      "sink": {
+                        "type": "BinarySink",
+                        "storeSettings": {
+                          "type": "AzureBlobFSWriteSettings"
+                        }
+                      }
+                    },
+                    "inputs": [
+                      {
+                        "referenceName": "DS_ADLS_Binary",
+                        "type": "DatasetReference",
+                        "parameters": {
+                          "p_container": {
+                            "value": "@pipeline().parameters.p_container",
+                            "type": "Expression"
+                          },
+                          "p_folder": {
+                            "value": "@pipeline().parameters.p_folder",
+                            "type": "Expression"
+                          },
+                          "p_file": {
+                            "value": "@pipeline().parameters.p_file",
+                            "type": "Expression"
+                          }
+                        }
+                      }
+                    ],
+                    "outputs": [
+                      {
+                        "referenceName": "DS_ADLS_Binary",
+                        "type": "DatasetReference",
+                        "parameters": {
+                          "p_container": "quarantine",
+                          "p_folder": {
+                            "value": "@concat('pipeline-failures/', pipeline().RunId, '/', pipeline().parameters.p_folder)",
+                            "type": "Expression"
+                          },
+                          "p_file": {
+                            "value": "@pipeline().parameters.p_file",
+                            "type": "Expression"
+                          }
+                        }
+                      }
+                    ]
+                  },
+                  {
+                    "name": "Fail_After_Copy_Quarantine",
+                    "type": "Fail",
+                    "dependsOn": [
+                      {
+                        "activity": "Quarantine_On_Copy_Failure",
+                        "dependencyConditions": [
+                          "Succeeded"
+                        ]
+                      }
+                    ],
+                    "typeProperties": {
+                      "message": "POC-01 Copy_CSV_To_Staging failed. Raw file was copied to quarantine when storage access allowed it.",
+                      "errorCode": "POC01_COPY_FAILED"
+                    }
+                  },
+                  {
+                    "name": "Fail_After_Merge_Quarantine",
+                    "type": "Fail",
+                    "dependsOn": [
+                      {
+                        "activity": "Quarantine_On_Merge_Failure",
+                        "dependencyConditions": [
+                          "Succeeded"
+                        ]
+                      }
+                    ],
+                    "typeProperties": {
+                      "message": "POC-01 SP_Validate_Merge failed. Raw file was copied to quarantine for investigation.",
+                      "errorCode": "POC01_MERGE_FAILED"
+                    }
+                  }
+                ],
+                "ifFalseActivities": [
+                  {
+                    "name": "Archive_Duplicate_File",
+                    "type": "Copy",
+                    "dependsOn": [],
+                    "typeProperties": {
+                      "source": {
+                        "type": "BinarySource",
+                        "storeSettings": {
+                          "type": "AzureBlobFSReadSettings",
+                          "recursive": false
+                        },
+                        "formatSettings": {
+                          "type": "BinaryReadSettings"
+                        }
+                      },
+                      "sink": {
+                        "type": "BinarySink",
+                        "storeSettings": {
+                          "type": "AzureBlobFSWriteSettings"
+                        }
+                      }
+                    },
+                    "inputs": [
+                      {
+                        "referenceName": "DS_ADLS_Binary",
+                        "type": "DatasetReference",
+                        "parameters": {
+                          "p_container": {
+                            "value": "@pipeline().parameters.p_container",
+                            "type": "Expression"
+                          },
+                          "p_folder": {
+                            "value": "@pipeline().parameters.p_folder",
+                            "type": "Expression"
+                          },
+                          "p_file": {
+                            "value": "@pipeline().parameters.p_file",
+                            "type": "Expression"
+                          }
+                        }
+                      }
+                    ],
+                    "outputs": [
+                      {
+                        "referenceName": "DS_ADLS_Binary",
+                        "type": "DatasetReference",
+                        "parameters": {
+                          "p_container": "archive",
+                          "p_folder": {
+                            "value": "@concat('duplicates/', pipeline().parameters.p_folder)",
+                            "type": "Expression"
+                          },
+                          "p_file": {
+                            "value": "@pipeline().parameters.p_file",
+                            "type": "Expression"
+                          }
+                        }
+                      }
+                    ]
+                  },
+                  {
+                    "name": "Delete_Duplicate_From_Landing",
+                    "type": "Delete",
+                    "dependsOn": [
+                      {
+                        "activity": "Archive_Duplicate_File",
+                        "dependencyConditions": [
+                          "Succeeded"
+                        ]
+                      }
+                    ],
+                    "typeProperties": {
+                      "dataset": {
+                        "referenceName": "DS_ADLS_Binary",
+                        "type": "DatasetReference",
+                        "parameters": {
+                          "p_container": {
+                            "value": "@pipeline().parameters.p_container",
+                            "type": "Expression"
+                          },
+                          "p_folder": {
+                            "value": "@pipeline().parameters.p_folder",
+                            "type": "Expression"
+                          },
+                          "p_file": {
+                            "value": "@pipeline().parameters.p_file",
+                            "type": "Expression"
+                          }
+                        }
+                      },
+                      "enableLogging": false,
+                      "storeSettings": {
+                        "type": "AzureBlobFSReadSettings",
+                        "recursive": false
+                      }
+                    }
+                  }
+                ]
+              }
+            }
+          ],
+          "ifFalseActivities": []
+        }
+      }
+    ],
+    "annotations": [
+      "POC-01",
+      "ADF",
+      "ADLS Gen2",
+      "Azure SQL",
+      "Managed Identity"
+    ]
+  }
+}

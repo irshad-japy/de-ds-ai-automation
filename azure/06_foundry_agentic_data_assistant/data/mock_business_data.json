@@ -1,0 +1,14 @@
+{
+  "orders": [
+    {"order_id": 1001, "order_date": "2026-09-01", "region": "South", "revenue": 1250.50, "shipment_status": "Delayed", "delay_reason": "Carrier capacity constraint"},
+    {"order_id": 1002, "order_date": "2026-09-01", "region": "West", "revenue": 980.00, "shipment_status": "Delivered", "delay_reason": null},
+    {"order_id": 1003, "order_date": "2026-09-02", "region": "North", "revenue": 2210.25, "shipment_status": "Delayed", "delay_reason": "Weather disruption"},
+    {"order_id": 1004, "order_date": "2026-09-02", "region": "South", "revenue": 600.00, "shipment_status": "Delivered", "delay_reason": null},
+    {"order_id": 1005, "order_date": "2026-09-02", "region": "West", "revenue": 1750.75, "shipment_status": "Delayed", "delay_reason": "Address verification hold"},
+    {"order_id": 1006, "order_date": "2026-09-03", "region": "North", "revenue": 400.00, "shipment_status": "Processing", "delay_reason": null}
+  ],
+  "metric_sources": {
+    "revenue": "dbo.Orders.revenue; business definition: sum of booked order revenue for the selected order_date range.",
+    "delayed_shipments": "dbo.Orders.shipment_status = 'Delayed'; grouped by order_date."
+  }
+}

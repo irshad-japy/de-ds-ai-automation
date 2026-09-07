@@ -1,0 +1,35 @@
+.env.example
+.gitignore
+README.md
+databricks/
+  export_gold_parquet.py
+  inspect_and_validate.py
+  stream_to_delta.py
+docs/
+  azure_portal_setup.md
+  cleanup.md
+  troubleshooting.md
+evidence/
+  README.md
+fabric/
+  setup_notes.md
+governance/
+  purview_notes.md
+kql/
+  create_shipment_table.kql
+  shipment_queries.kql
+monitoring/
+  monitoring_checklist.md
+producer/
+  __pycache__/
+    receive_events.cpython-313.pyc
+    send_events.cpython-313.pyc
+  receive_events.py
+  send_events.py
+requirements.txt
+sample_data/
+  sample_event.json
+semantic_model/
+  measures.dax
+synapse/
+  serverless_queries.sql

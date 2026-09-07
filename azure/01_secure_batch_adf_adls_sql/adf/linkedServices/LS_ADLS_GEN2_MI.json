@@ -1,0 +1,10 @@
+{
+  "name": "LS_ADLS_GEN2_MI",
+  "properties": {
+    "annotations": ["POC-01", "ManagedIdentity", "GitHub-safe"],
+    "type": "AzureBlobFS",
+    "typeProperties": {
+      "url": "https://<STORAGE_ACCOUNT>.dfs.core.windows.net"
+    }
+  }
+}

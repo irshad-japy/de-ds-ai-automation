@@ -1,0 +1,18 @@
+{
+  "invoice_number": "SYN-2026-001",
+  "invoice_date": "2026-08-20",
+  "supplier_name": "Contoso Office Supplies Pvt Ltd",
+  "customer_name": "Fabrikam Analytics Pvt Ltd",
+  "currency": "INR",
+  "line_items": [
+    {"line_number": 1, "description": "A4 Paper Box", "quantity": 2, "unit_price": 1200.0, "amount": 2400.0},
+    {"line_number": 2, "description": "Printer Toner", "quantity": 1, "unit_price": 2500.0, "amount": 2500.0}
+  ],
+  "subtotal": 4900.0,
+  "tax": 882.0,
+  "total": 5782.0,
+  "confidence": {
+    "invoice_number": 0.98,
+    "total": 0.99
+  }
+}

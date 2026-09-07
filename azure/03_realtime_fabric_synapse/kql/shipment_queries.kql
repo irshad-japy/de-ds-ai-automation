@@ -1,0 +1,35 @@
+// 1. Basic arrival verification
+ShipmentEvents
+| take 20
+
+// 2. Events by 5-minute window and type
+ShipmentEvents
+| summarize events=count() by bin(event_ts, 5m), event_type
+| order by event_ts desc
+
+// 3. Delayed shipments by region
+ShipmentEvents
+| where event_type == "DELAYED"
+| summarize delayed=count() by region
+| order by delayed desc
+
+// 4. Latest event / freshness
+ShipmentEvents
+| summarize latest_event=max(event_ts)
+| extend freshness_seconds = datetime_diff("second", now(), latest_event)
+
+// 5. Duplicate event IDs at raw KQL destination
+// Eventstream itself may retain duplicates. This query demonstrates detection.
+ShipmentEvents
+| summarize copies=count() by event_id
+| where copies > 1
+| order by copies desc
+
+// 6. Revenue by region
+ShipmentEvents
+| summarize
+    events=count(),
+    revenue=round(sum(revenue), 2),
+    avg_fulfillment_minutes=round(avg(todouble(fulfillment_minutes)), 2)
+  by region
+| order by region asc

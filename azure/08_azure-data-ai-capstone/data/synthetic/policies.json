@@ -1,0 +1,16 @@
+[
+  {
+    "id": "POL-RET-01",
+    "title": "Retail Return Policy",
+    "category": "policy",
+    "source": "policy-return.md",
+    "content": "Unused items may be returned within 30 days of delivery with proof of purchase. Opened electronics are accepted within 14 days unless defective."
+  },
+  {
+    "id": "POL-SHIP-01",
+    "title": "Shipment Delay Policy",
+    "category": "policy",
+    "source": "policy-shipping.md",
+    "content": "A shipment is considered delayed when it misses the promised delivery date by more than 24 hours. Customer support should proactively notify the customer for delays above 48 hours."
+  }
+]

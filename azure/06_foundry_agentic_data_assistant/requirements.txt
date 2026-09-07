@@ -1,0 +1,10 @@
+azure-ai-projects>=2.3.0,<2.4.0
+azure-identity>=1.17.0
+azure-search-documents>=11.6.0
+azure-monitor-opentelemetry>=1.6.0
+openai>=1.0.0
+python-dotenv>=1.0.1
+requests>=2.32.0
+pytest>=8.0.0
+azure-functions>=1.20.0
+pyodbc>=5.1.0

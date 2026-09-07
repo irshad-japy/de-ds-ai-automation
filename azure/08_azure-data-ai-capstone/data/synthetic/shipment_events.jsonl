@@ -1,0 +1,3 @@
+{"event_id": "E-001", "order_id": "O-1001", "status": "IN_TRANSIT", "event_time": "2026-09-06T08:00:00Z", "location": "Hyderabad"}
+{"event_id": "E-002", "order_id": "O-1002", "status": "OUT_FOR_DELIVERY", "event_time": "2026-09-06T08:05:00Z", "location": "Bengaluru"}
+{"event_id": "E-003", "order_id": "O-1003", "status": "PICKED_UP", "event_time": "2026-09-06T08:10:00Z", "location": "Pune"}

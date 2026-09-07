@@ -1,0 +1,134 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "CanonicalReceiptV1",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "document_id",
+    "correlation_id",
+    "source",
+    "processing",
+    "fields"
+  ],
+  "properties": {
+    "schema_version": {
+      "const": "1.0"
+    },
+    "document_id": {
+      "type": "string"
+    },
+    "correlation_id": {
+      "type": "string"
+    },
+    "source": {
+      "type": "object",
+      "required": [
+        "bucket",
+        "key"
+      ],
+      "properties": {
+        "bucket": {
+          "type": "string"
+        },
+        "key": {
+          "type": "string"
+        },
+        "etag": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "bank_id": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "receipt_format_id": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      }
+    },
+    "processing": {
+      "type": "object",
+      "properties": {
+        "ocr_engine": {
+          "type": "string"
+        },
+        "ocr_api": {
+          "type": "string"
+        },
+        "status": {
+          "enum": [
+            "RECEIVED",
+            "OCR_COMPLETE",
+            "VALID",
+            "REVIEW",
+            "FAILED",
+            "HANDED_OFF"
+          ]
+        },
+        "attempt_count": {
+          "type": "integer",
+          "minimum": 0
+        }
+      }
+    },
+    "fields": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "object",
+        "required": [
+          "value"
+        ],
+        "properties": {
+          "value": {},
+          "confidence": {
+            "type": [
+              "number",
+              "null"
+            ],
+            "minimum": 0,
+            "maximum": 100
+          },
+          "source_label": {
+            "type": [
+              "string",
+              "null"
+            ]
+          }
+        }
+      }
+    },
+    "validation": {
+      "type": "object",
+      "properties": {
+        "is_valid": {
+          "type": "boolean"
+        },
+        "missing_required_fields": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "low_confidence_fields": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "errors": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,31 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "NormalizedInvoice",
+  "type": "object",
+  "required": ["invoice_number", "line_items", "total", "confidence"],
+  "properties": {
+    "invoice_number": {"type": ["string", "null"]},
+    "invoice_date": {"type": ["string", "null"]},
+    "supplier_name": {"type": ["string", "null"]},
+    "customer_name": {"type": ["string", "null"]},
+    "currency": {"type": ["string", "null"]},
+    "subtotal": {"type": ["number", "null"]},
+    "tax": {"type": ["number", "null"]},
+    "total": {"type": ["number", "null"]},
+    "line_items": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["line_number"],
+        "properties": {
+          "line_number": {"type": "integer"},
+          "description": {"type": ["string", "null"]},
+          "quantity": {"type": ["number", "null"]},
+          "unit_price": {"type": ["number", "null"]},
+          "amount": {"type": ["number", "null"]}
+        }
+      }
+    },
+    "confidence": {"type": "object"}
+  }
+}

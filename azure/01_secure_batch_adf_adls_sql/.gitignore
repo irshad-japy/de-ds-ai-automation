@@ -1,0 +1,31 @@
+# Python
+.venv/
+__pycache__/
+*.pyc
+
+# Local generated data
+/data/generated/
+
+# Secrets / local config
+.env
+*.tfvars
+!*.tfvars.example
+*.pem
+*.pfx
+*.key
+
+# Terraform local state
+**/.terraform/
+*.tfstate
+*.tfstate.*
+.terraform.lock.hcl
+crash.log
+
+# Azure CLI / editor
+.azure/
+.vscode/
+.idea/
+
+# OS
+.DS_Store
+Thumbs.db

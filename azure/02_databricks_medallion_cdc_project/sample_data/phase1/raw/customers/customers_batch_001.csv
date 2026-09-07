@@ -1,0 +1,5 @@
+customer_id,customer_name,email,city,country,updated_at
+C001,Asha Khan,asha@example.com,Hyderabad,India,2026-08-30 08:00:00
+C002,Ravi Mehta,ravi@example.com,Mumbai,India,2026-08-30 08:05:00
+C003,Neha Singh,neha@example.com,Pune,India,2026-08-30 08:10:00
+,Invalid Customer,bad-email,Delhi,India,2026-08-30 08:20:00

@@ -1,0 +1,13 @@
+-- Replace 'shipment_summary_fabric' with the actual model table name.
+
+Total Orders =
+SUM('shipment_summary_fabric'[total_orders])
+
+Revenue =
+SUM('shipment_summary_fabric'[revenue])
+
+Delayed Shipments =
+SUM('shipment_summary_fabric'[delayed_shipments])
+
+Average Fulfillment Time =
+AVERAGE('shipment_summary_fabric'[avg_fulfillment_minutes])

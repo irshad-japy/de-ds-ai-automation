@@ -1,0 +1,7 @@
+{
+  "pipeline": "pl_ingest_orders_to_adls",
+  "parameters": {
+    "file_name": "orders_001.csv",
+    "target_directory": "raw/orders"
+  }
+}

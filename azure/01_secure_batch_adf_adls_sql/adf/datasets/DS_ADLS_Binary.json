@@ -1,0 +1,33 @@
+{
+  "name": "DS_ADLS_Binary",
+  "properties": {
+    "linkedServiceName": {
+      "referenceName": "LS_ADLS_GEN2_MI",
+      "type": "LinkedServiceReference"
+    },
+    "parameters": {
+      "p_container": { "type": "String" },
+      "p_folder": { "type": "String" },
+      "p_file": { "type": "String" }
+    },
+    "annotations": ["POC-01", "Archive/quarantine raw file"],
+    "type": "Binary",
+    "typeProperties": {
+      "location": {
+        "type": "AzureBlobFSLocation",
+        "fileName": {
+          "value": "@dataset().p_file",
+          "type": "Expression"
+        },
+        "folderPath": {
+          "value": "@dataset().p_folder",
+          "type": "Expression"
+        },
+        "fileSystem": {
+          "value": "@dataset().p_container",
+          "type": "Expression"
+        }
+      }
+    }
+  }
+}

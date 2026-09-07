@@ -1,0 +1,65 @@
+trigger:
+- main
+
+variables:
+  pythonVersion: '3.12'
+  ENABLE_DEPLOY: 'false'
+
+stages:
+- stage: Validate
+  jobs:
+  - job: PythonAndIaC
+    pool:
+      vmImage: ubuntu-latest
+    steps:
+    - task: UsePythonVersion@0
+      inputs:
+        versionSpec: '$(pythonVersion)'
+
+    - script: |
+        python -m pip install --upgrade pip pipx
+        pipx install poetry
+        poetry check
+        poetry install
+        poetry run ruff check .
+        poetry run pytest
+      displayName: Validate Python and run tests
+
+    - script: |
+        terraform -chdir=infra/terraform fmt -check -recursive
+        terraform -chdir=infra/terraform init -backend=false
+        terraform -chdir=infra/terraform validate
+      displayName: Validate Terraform
+
+    - task: AzureCLI@2
+      inputs:
+        azureSubscription: 'POC08-SERVICE-CONNECTION'
+        scriptType: bash
+        scriptLocation: inlineScript
+        inlineScript: |
+          az bicep build --file infra/bicep/main.bicep
+      displayName: Validate Bicep
+      condition: and(succeeded(), ne(variables['Build.Reason'], 'PullRequest'))
+
+- stage: Deploy
+  dependsOn: Validate
+  condition: and(succeeded(), eq(variables['ENABLE_DEPLOY'], 'true'), eq(variables['Build.SourceBranch'], 'refs/heads/main'))
+  jobs:
+  - deployment: TerraformApply
+    environment: poc08-lab
+    strategy:
+      runOnce:
+        deploy:
+          steps:
+          - checkout: self
+          - task: AzureCLI@2
+            inputs:
+              azureSubscription: 'POC08-SERVICE-CONNECTION'
+              scriptType: bash
+              scriptLocation: inlineScript
+              inlineScript: |
+                export ARM_SUBSCRIPTION_ID="$(az account show --query id -o tsv)"
+                terraform -chdir=infra/terraform init
+                terraform -chdir=infra/terraform apply -auto-approve \
+                  -var="subscription_id=$ARM_SUBSCRIPTION_ID"
+            displayName: Explicitly enabled Terraform deploy

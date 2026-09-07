@@ -1,0 +1,1 @@
+C:\Users\ermdi\projects\common_venv_py312\.venv\Scripts\activate.bat

@@ -1,0 +1,16 @@
+.env
+.env.*
+!.env.example
+*.pem
+*.pfx
+*.key
+*.cer
+*.publishsettings
+terraform.tfstate
+terraform.tfstate.*
+*.tfvars
+.terraform/
+__pycache__/
+.venv/
+local_config/
+evidence/private/

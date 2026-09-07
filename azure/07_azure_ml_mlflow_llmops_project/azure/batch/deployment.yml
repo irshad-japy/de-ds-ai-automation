@@ -1,0 +1,19 @@
+$schema: https://azuremlschemas.azureedge.net/latest/modelBatchDeployment.schema.json
+# Manual CLI alternative. Prefer azure/batch/deploy_batch.py for the beginner path.
+name: blue
+endpoint_name: shipment-delay-batch-change-me
+type: model
+model: azureml:shipment-delay-model@latest
+compute: azureml:cpu-poc07
+resources:
+  instance_count: 1
+settings:
+  max_concurrency_per_instance: 1
+  mini_batch_size: 1
+  output_action: append_row
+  output_file_name: predictions.csv
+  retry_settings:
+    max_retries: 2
+    timeout: 300
+  error_threshold: -1
+  logging_level: info

@@ -1,0 +1,10 @@
+.venv/
+__pycache__/
+*.pyc
+.env
+local.settings.json
+output/*
+!output/.gitkeep
+.vscode/
+.python_packages/
+*.log

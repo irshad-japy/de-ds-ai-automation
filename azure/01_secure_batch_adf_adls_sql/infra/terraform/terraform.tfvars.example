@@ -1,0 +1,21 @@
+subscription_id = "<YOUR_SUBSCRIPTION_ID>"
+location            = "centralindia"
+resource_group_name = "rg-azde-poc01-dev"
+
+storage_account_name = "stazdepoc01CHANGE"
+data_factory_name    = "adf-azde-poc01-CHANGE"
+sql_server_name      = "sql-azde-poc01-CHANGE"
+sql_database_name    = "sqldb-azde-poc01-dev"
+key_vault_name       = "kv-azde-poc01-CHANGE"
+
+# NEVER commit real credentials. Copy this file to terraform.tfvars locally.
+sql_admin_login    = "pocsqladmin"
+sql_admin_password = "CHANGE_ME_LOCALLY"
+
+# Optional: your current public IPv4 address for SQL client access.
+client_ip = null
+
+# Optional: your Microsoft Entra object ID so the local Python uploader has blob data access.
+uploader_object_id = null
+
+create_log_analytics = false

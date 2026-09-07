@@ -1,0 +1,15 @@
+{
+  "IsEncrypted": false,
+  "Values": {
+    "FUNCTIONS_WORKER_RUNTIME": "python",
+    "AzureWebJobsStorage": "UseDevelopmentStorage=true",
+    "AZURE_STORAGE_ACCOUNT_NAME": "<your-storage-account-name>",
+    "AZURE_STORAGE_CONTAINER": "documents",
+    "DOCUMENTINTELLIGENCE_ENDPOINT": "<your-endpoint>",
+    "DOCUMENTINTELLIGENCE_API_KEY": "<local-only-key-or-leave-empty-for-entra>",
+    "AZURE_SQL_CONNECTIONSTRING": "Server=<server>.database.windows.net;Database=<db>;Authentication=ActiveDirectoryDefault;Encrypt=yes;TrustServerCertificate=no;",
+    "CRITICAL_CONFIDENCE_THRESHOLD": "0.70",
+    "AMOUNT_TOLERANCE": "0.05",
+    "ENABLE_SQL_LOAD": "true"
+  }
+}

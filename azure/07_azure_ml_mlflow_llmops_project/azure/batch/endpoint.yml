@@ -1,0 +1,5 @@
+$schema: https://azuremlschemas.azureedge.net/latest/batchEndpoint.schema.json
+# Manual CLI alternative. Replace this with a region-unique name.
+name: shipment-delay-batch-change-me
+description: POC-07 shipment delay batch endpoint
+auth_mode: aad_token

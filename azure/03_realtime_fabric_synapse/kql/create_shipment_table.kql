@@ -1,0 +1,26 @@
+// Run in the Eventhouse KQL database.
+
+.create table ShipmentEvents (
+    event_id:string,
+    order_id:long,
+    event_type:string,
+    event_ts:datetime,
+    region:string,
+    revenue:real,
+    fulfillment_minutes:long,
+    producer_seq:long
+)
+
+// Optional JSON ingestion mapping.
+// In the Eventstream UI, automatic schema/mapping can also be configured.
+.create-or-alter table ShipmentEvents ingestion json mapping 'ShipmentEventsJsonMapping'
+'[
+  {"column":"event_id","path":"$.event_id","datatype":"string"},
+  {"column":"order_id","path":"$.order_id","datatype":"long"},
+  {"column":"event_type","path":"$.event_type","datatype":"string"},
+  {"column":"event_ts","path":"$.event_ts","datatype":"datetime"},
+  {"column":"region","path":"$.region","datatype":"string"},
+  {"column":"revenue","path":"$.revenue","datatype":"real"},
+  {"column":"fulfillment_minutes","path":"$.fulfillment_minutes","datatype":"long"},
+  {"column":"producer_seq","path":"$.producer_seq","datatype":"long"}
+]'

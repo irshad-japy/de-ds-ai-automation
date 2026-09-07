@@ -1,0 +1,17 @@
+# Copy this file to terraform.tfvars and replace the subscription ID,
+# OR run ..\\cmd\\01_configure_terraform.cmd to generate terraform.tfvars.
+subscription_id = "00000000-0000-0000-0000-000000000000"
+
+location            = "centralindia"
+resource_group_name = "rg-azde-poc02"
+
+# Terraform adds a random suffix, so the final storage account remains globally unique.
+storage_account_prefix = "stazdepoc02"
+
+container_name             = "poc02"
+access_connector_name      = "ac-azde-poc02"
+databricks_workspace_name  = "dbw-azde-poc02"
+catalog_name               = "azde_poc"
+storage_credential_name    = "poc02_storage_cred"
+external_location_name     = "poc02_ext"
+job_num_workers            = 1

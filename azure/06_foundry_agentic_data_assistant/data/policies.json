@@ -1,0 +1,23 @@
+[
+  {
+    "id": "return-policy",
+    "title": "Return Eligibility Policy",
+    "content": "Standard products are eligible for return within 30 calendar days of delivery if the item is unused and in resalable condition. Final-sale items are not eligible. Damaged-on-arrival items should be reported within 7 days.",
+    "url": "https://example.invalid/policies/returns",
+    "category": "policy"
+  },
+  {
+    "id": "shipment-delay-policy",
+    "title": "Shipment Delay Handling Policy",
+    "content": "A shipment is operationally classified as delayed when the committed delivery date is missed or the carrier reports a delay exception. Customer support should communicate the reason recorded by operations and avoid inventing a cause when none is available.",
+    "url": "https://example.invalid/policies/shipment-delays",
+    "category": "policy"
+  },
+  {
+    "id": "metric-governance",
+    "title": "Metric Governance Policy",
+    "content": "Business metrics must be answered from approved analytical functions or governed datasets. Policy documents explain definitions and rules but should not be used to fabricate current numeric values.",
+    "url": "https://example.invalid/policies/metric-governance",
+    "category": "governance"
+  }
+]

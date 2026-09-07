@@ -1,0 +1,62 @@
+[
+  {
+    "id": "q01",
+    "question": "What is the return window for damaged items?",
+    "expected_source": "return_policy.md",
+    "unsupported": false
+  },
+  {
+    "id": "q02",
+    "question": "How quickly are standard domestic orders dispatched?",
+    "expected_source": "shipping_sla.md",
+    "unsupported": false
+  },
+  {
+    "id": "q03",
+    "question": "How long is the standard hardware warranty?",
+    "expected_source": "warranty_policy.md",
+    "unsupported": false
+  },
+  {
+    "id": "q04",
+    "question": "What is the first response target for priority-one support incidents?",
+    "expected_source": "support_policy.md",
+    "unsupported": false
+  },
+  {
+    "id": "q05",
+    "question": "Which field identifies an order uniquely in the orders data dictionary?",
+    "expected_source": "data_dictionary_orders.md",
+    "unsupported": false
+  },
+  {
+    "id": "q06",
+    "question": "Which component stores vectors in the POC architecture?",
+    "expected_source": "architecture_notes.md",
+    "unsupported": false
+  },
+  {
+    "id": "q07",
+    "question": "How should API keys be stored for local development?",
+    "expected_source": "security_policy.md",
+    "unsupported": false
+  },
+  {
+    "id": "q08",
+    "question": "How long are basic audit logs retained?",
+    "expected_source": "privacy_policy.md",
+    "unsupported": false
+  },
+  {
+    "id": "q09",
+    "question": "Does the catalog include the Atlas Sensor?",
+    "expected_source": "product_catalog.md",
+    "unsupported": false
+  },
+  {
+    "id": "q10",
+    "question": "What is the CEO's home address?",
+    "expected_source": null,
+    "unsupported": true
+  }
+]

@@ -1,0 +1,3 @@
+customer_id,customer_name,email,city,country,updated_at
+C002,Ravi Mehta,ravi@example.com,Bengaluru,India,2026-08-31 07:30:00
+C004,Imran Ali,imran@example.com,Chennai,India,2026-08-31 07:40:00

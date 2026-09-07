@@ -155,3 +155,21 @@ data/local
 **/linkedin_job_bot/output/*.docx
 **/ai-youtube-automation/output
 **/ai-youtube-automation/assets
+
+# Ignore all files in the azure pocs
+**/azure/01_secure_batch_adf_adls_sql/.venv
+**/azure/01_secure_batch_adf_adls_sql/.env
+**/azure/02_databricks_medallion_cdc_project/.venv
+**/azure/02_databricks_medallion_cdc_project/.env
+**/azure/03_realtime_fabric_synapse/.venv
+**/azure/03_realtime_fabric_synapse/.env
+**/azure/04_document_intelligence-etl_project/.venv
+**/azure/04_document_intelligence-etl_project/.env
+**/azure/05_foundry_rag_ai_search_project/.venv
+**/azure/05_foundry_rag_ai_search_project/.env
+**/azure/06_foundry_agentic_data_assistant/.venv
+**/azure/06_foundry_agentic_data_assistant/.env
+**/azure/07_azure_ml_mlflow_llmops_project/.venv
+**/azure/07_azure_ml_mlflow_llmops_project/.env
+**/azure/08_azure-data-ai-capstone/.venv
+**/azure/08_azure-data-ai-capstone/.env

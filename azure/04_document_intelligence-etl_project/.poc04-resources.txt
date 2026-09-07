@@ -1,0 +1,10 @@
+RG=rg-poc04-docintel
+LOCATION=centralindia
+DATA_STORAGE=stpoc04di5506
+FUNCTION_STORAGE=stpoc04fn5506
+DOC_INTEL=di-poc04-5506
+DI_ENDPOINT=https://di-poc04-5506-e96f3.cognitiveservices.azure.com/
+KEYVAULT=kv-poc04-5506
+SQL_SERVER=sql-poc04-5506
+SQL_DB=sqldb-poc04
+FUNCTION_APP=func-poc04-di-5506

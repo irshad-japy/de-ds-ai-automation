@@ -1,0 +1,13 @@
+// Adapt table names to your workspace. These are starter queries.
+
+// Recent application errors
+AppExceptions
+| where TimeGenerated > ago(24h)
+| summarize tool_failure_count=count() by bin(TimeGenerated, 1h)
+| order by TimeGenerated desc
+
+// Request latency (if Application Insights is connected)
+AppRequests
+| where TimeGenerated > ago(24h)
+| summarize p95_ms=percentile(DurationMs, 95), requests=count() by Name
+| order by p95_ms desc

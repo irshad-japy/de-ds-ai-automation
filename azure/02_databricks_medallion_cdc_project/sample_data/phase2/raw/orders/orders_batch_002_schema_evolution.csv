@@ -1,0 +1,4 @@
+order_id,customer_id,product_id,product_name,product_category,quantity,unit_price,status,order_ts,updated_at,sales_channel
+O1001,C001,P001,USB-C Cable,Accessories,2,19.99,SHIPPED,2026-08-30 09:00:00,2026-08-31 08:00:00,WEB
+O1009,C002,P004,Mechanical Keyboard,Accessories,1,79.00,CREATED,2026-08-31 08:10:00,2026-08-31 08:10:00,MOBILE
+O1010,C004,P007,Noise Cancelling Headphones,Electronics,1,149.00,CREATED,2026-08-31 08:20:00,2026-08-31 08:20:00,PARTNER

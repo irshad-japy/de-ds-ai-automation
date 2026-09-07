@@ -1,0 +1,14 @@
+.venv/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.env
+mlruns/
+outputs/*.json
+outputs/*.csv
+outputs/*.txt
+outputs/batch_download/
+data/train/*.csv
+data/scoring/*.csv
+models/
+.DS_Store

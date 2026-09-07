@@ -1,0 +1,14 @@
+{
+  "name": "LS_AZURE_SQL_MI",
+  "properties": {
+    "annotations": ["POC-01", "ManagedIdentity", "GitHub-safe"],
+    "type": "AzureSqlDatabase",
+    "typeProperties": {
+      "server": "<SQL_SERVER>.database.windows.net",
+      "database": "sqldb-azde-poc01-dev",
+      "encrypt": "mandatory",
+      "trustServerCertificate": false,
+      "authenticationType": "SystemAssignedManagedIdentity"
+    }
+  }
+}

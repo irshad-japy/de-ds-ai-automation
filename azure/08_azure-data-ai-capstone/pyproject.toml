@@ -1,0 +1,61 @@
+[tool.poetry]
+name = "azure-data-ai-capstone"
+version = "0.1.0"
+description = "POC-08 Integrated Azure Data + AI Capstone"
+authors = ["POC Learner <learner@example.com>"]
+readme = "README.md"
+package-mode = false
+
+[tool.poetry.dependencies]
+python = ">=3.12,<3.13"
+python-dotenv = ">=1.0,<2.0"
+pandas = ">=2.2,<3.0"
+azure-identity = ">=1.25,<2.0"
+azure-core = ">=1.35,<2.0"
+azure-storage-file-datalake = ">=12.25,<13.0"
+azure-eventhub = ">=5.15,<6.0"
+azure-ai-documentintelligence = ">=1.0.2,<2.0"
+azure-search-documents = ">=11.6,<12.0"
+azure-ai-projects = ">=2.0,<3.0"
+openai = ">=1.75,<3.0"
+
+[tool.poetry.group.dev.dependencies]
+pytest = ">=8.3,<10.0"
+ruff = ">=0.8,<1.0"
+
+[tool.poetry.group.sql]
+optional = true
+
+[tool.poetry.group.sql.dependencies]
+pyodbc = ">=5.2,<6.0"
+
+[tool.poetry.group.ml]
+optional = true
+
+[tool.poetry.group.ml.dependencies]
+mlflow = ">=3.0,<4.0"
+scikit-learn = ">=1.5,<2.0"
+
+[tool.poetry.group.functions]
+optional = true
+
+[tool.poetry.group.functions.dependencies]
+azure-functions = ">=1.21,<2.0"
+
+[tool.pytest.ini_options]
+pythonpath = ["."]
+testpaths = ["tests"]
+addopts = "-q"
+
+[tool.ruff]
+line-length = 100
+target-version = "py312"
+exclude = ["lakehouse/bronze", "lakehouse/silver", "lakehouse/gold"]
+
+[tool.ruff.lint]
+select = ["E", "F", "I"]
+ignore = ["E501"]
+
+[build-system]
+requires = ["poetry-core>=2.0.0,<3.0.0"]
+build-backend = "poetry.core.masonry.api"

@@ -1,0 +1,13 @@
+.venv/
+__pycache__/
+*.pyc
+.env
+local.settings.json
+.pytest_cache/
+.vscode/
+*.log
+.DS_Store
+
+# Local evaluation/runtime output
+eval/evaluation_results.json
+logs/

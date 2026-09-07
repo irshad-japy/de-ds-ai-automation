@@ -1,0 +1,11 @@
+# Reproducible Python 3.12 environment for POC-07
+# MLflow is intentionally kept on 2.x for Azure ML workspace tracking compatibility.
+mlflow==2.22.5
+azureml-mlflow==1.62.0.post6
+azure-ai-ml==1.34.1
+azure-identity>=1.20,<2
+scikit-learn==1.7.2
+pandas>=2.2,<3
+numpy>=1.26,<3
+python-dotenv==1.2.3
+pytest>=8,<9

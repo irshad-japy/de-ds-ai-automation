@@ -1,0 +1,46 @@
+{
+  "name": "DS_ADLS_OrdersCsv",
+  "properties": {
+    "linkedServiceName": {
+      "referenceName": "LS_ADLS_GEN2_MI",
+      "type": "LinkedServiceReference"
+    },
+    "parameters": {
+      "p_container": { "type": "String" },
+      "p_folder": { "type": "String" },
+      "p_file": { "type": "String" }
+    },
+    "annotations": ["POC-01", "Parameterized CSV"],
+    "type": "DelimitedText",
+    "typeProperties": {
+      "location": {
+        "type": "AzureBlobFSLocation",
+        "fileName": {
+          "value": "@dataset().p_file",
+          "type": "Expression"
+        },
+        "folderPath": {
+          "value": "@dataset().p_folder",
+          "type": "Expression"
+        },
+        "fileSystem": {
+          "value": "@dataset().p_container",
+          "type": "Expression"
+        }
+      },
+      "columnDelimiter": ",",
+      "escapeChar": "\\",
+      "firstRowAsHeader": true,
+      "quoteChar": "\""
+    },
+    "schema": [
+      { "name": "order_id", "type": "String" },
+      { "name": "customer_id", "type": "String" },
+      { "name": "order_ts", "type": "String" },
+      { "name": "product_id", "type": "String" },
+      { "name": "quantity", "type": "String" },
+      { "name": "unit_price", "type": "String" },
+      { "name": "status", "type": "String" }
+    ]
+  }
+}

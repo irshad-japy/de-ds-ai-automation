@@ -1,0 +1,12 @@
+{
+  "resource_group": "rg-azde-poc01-dev",
+  "location": "centralindia",
+  "storage_account": "<globally-unique-storage-account>",
+  "adf_name": "<globally-unique-adf-name>",
+  "sql_server": "<globally-unique-sql-server-name>",
+  "sql_database": "sqldb-azde-poc01-dev",
+  "key_vault": "<globally-unique-key-vault-name>",
+  "landing_container": "landing",
+  "archive_container": "archive",
+  "quarantine_container": "quarantine"
+}

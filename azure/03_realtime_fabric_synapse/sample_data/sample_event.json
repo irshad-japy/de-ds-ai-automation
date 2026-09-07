@@ -1,0 +1,10 @@
+{
+  "event_id": "evt-001",
+  "order_id": 1001,
+  "event_type": "SHIPPED",
+  "event_ts": "2026-08-28T10:00:00Z",
+  "region": "IN-SOUTH",
+  "revenue": 1299.5,
+  "fulfillment_minutes": 120,
+  "producer_seq": 1
+}
